@@ -5,6 +5,29 @@ All notable changes to Juiced will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.6] - 2025-11-14
+
+### Fixed
+- Message wrapping now works correctly for all messages (no more truncation)
+- Tab completion works with usernames containing underscores
+- Emote tab completion now uses actual channel emotes from CyTube
+- Fixed startup crash with get_config() argument error
+- AFK users now display with dim + italic formatting for better visibility
+- User list now sorts by rank hierarchy (Owner > Admin > Mod > User)
+- Mods always display at top of user list even when AFK
+
+### Added
+- Interactive setup scripts (setup.bat / setup.sh) for easy installation
+- Automated config file setup with prompts for credentials
+- Virtual environment detection and warnings in launchers
+- Comprehensive INSTALL.md guide for new users
+- emoteList event handler for receiving channel-specific emotes
+
+### Changed
+- User list sorting now prioritizes by rank, then alphabetically
+- Setup scripts now prompt for channel, username, and password
+- Improved launcher scripts with helpful warnings
+
 ## [0.2.0] - 2025-11-14
 
 ### Added
