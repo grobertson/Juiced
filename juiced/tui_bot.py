@@ -556,6 +556,29 @@ class TUIBot(Bot):
             self._color_index += 1
         return self.user_colors[username]
 
+    def get_display_username(self, username):
+        """Return display-only username for chat rendering.
+
+        Moderators and above (rank >= 2) are displayed with a leading '@'
+        (e.g., '@alice'). This modifies only the presentation layer; it does
+        not change stored usernames, logs, or any persisted data.
+
+        Args:
+            username (str): Stored username
+
+        Returns:
+            str: Display username (may be prefixed with '@')
+        """
+        try:
+            if self.channel and self.channel.userlist and username in self.channel.userlist:
+                user_obj = self.channel.userlist[username]
+                if getattr(user_obj, 'rank', 0) >= 2:
+                    return '@' + username
+        except Exception:
+            # On any error, fall back to raw username
+            pass
+        return username
+
     def add_chat_line(self, username, message, prefix='', color_override=None):
         """Add a line to the chat history buffer.
 
@@ -1035,10 +1058,13 @@ class TUIBot(Bot):
             username = msg_data['username']
             message = msg_data['message']
             prefix = msg_data['prefix']
-            
+
+            # Determine display username (presentation-only)
+            display_username = self.get_display_username(username)
+
             # Calculate how many lines this message will take using helper method
             wrapped_lines = self._calculate_message_wrapped_lines(
-                message, chat_width, timestamp, username, prefix
+                message, chat_width, timestamp, display_username, prefix
             )
             lines_needed = len(wrapped_lines)
             
@@ -1064,6 +1090,9 @@ class TUIBot(Bot):
             prefix = msg_data['prefix']
             color = msg_data['color']
 
+            # Compute display-only username (presentation only)
+            display_username = self.get_display_username(username)
+
             # Format: [HH:MM:SS] <username> message
             # or:      [HH:MM:SS] [PM] <username> message
             time_str = self.term.bright_black(f'[{timestamp}]')
@@ -1072,13 +1101,13 @@ class TUIBot(Bot):
             color_func = getattr(self.term, color, self.term.white)
 
             if prefix:
-                username_str = f'{prefix} {color_func(f"<{username}>")} '
+                username_str = f'{prefix} {color_func(f"<{display_username}>")} '
             else:
-                username_str = f'{color_func(f"<{username}>")} '
+                username_str = f'{color_func(f"<{display_username}>")} '
 
             # Wrap message using helper method
             wrapped_lines = self._calculate_message_wrapped_lines(
-                message, chat_width, timestamp, username, prefix
+                message, chat_width, timestamp, display_username, prefix
             )
             
             # Calculate prefix length for continuation line indentation
