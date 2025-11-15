@@ -919,12 +919,39 @@ class TUIBot(Bot):
         user_list_width = 22
         chat_width = self.term.width - user_list_width - 1
 
-        # Get visible messages based on scroll offset
-        total_messages = len(self.chat_history)
-        start_idx = max(0, total_messages - chat_height - self.scroll_offset)
-        end_idx = total_messages - self.scroll_offset
-        visible_messages = list(self.chat_history)[start_idx:end_idx]
-
+        # Calculate which messages fit on screen, accounting for wrapping
+        visible_messages = []
+        lines_used = 0
+        
+        # Start from the end and work backwards, counting lines as we go
+        for msg_data in reversed(self.chat_history):
+            timestamp = msg_data['timestamp']
+            username = msg_data['username']
+            message = msg_data['message']
+            prefix = msg_data['prefix']
+            
+            # Calculate how many lines this message will take
+            prefix_len = len(f'[{timestamp}] ')
+            if prefix:
+                prefix_len += len(f'{prefix} ')
+            prefix_len += len(f'<{username}> ')
+            
+            max_msg_width = chat_width - prefix_len
+            if max_msg_width > 0:
+                wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
+                                             break_long_words=True, 
+                                             break_on_hyphens=True)
+                lines_needed = max(1, len(wrapped_lines))  # At least 1 line even if empty
+            else:
+                lines_needed = 1
+            
+            # Check if this message fits
+            if lines_used + lines_needed <= chat_height:
+                visible_messages.insert(0, msg_data)
+                lines_used += lines_needed
+            else:
+                break
+        
         # Render separator line
         border_color = self.theme['colors']['borders']
         border_func = getattr(self.term, border_color, self.term.bright_black)
@@ -932,74 +959,73 @@ class TUIBot(Bot):
             print(border_func('─' * (chat_width)), end='', flush=True)
 
         # Render chat messages
-        for i, msg_data in enumerate(visible_messages):
-            line_num = 2 + i
+        current_line = 2
+        for msg_data in visible_messages:
+            timestamp = msg_data['timestamp']
+            username = msg_data['username']
+            message = msg_data['message']
+            prefix = msg_data['prefix']
+            color = msg_data['color']
 
-            with self.term.location(0, line_num):
-                # Clear the line
-                print(' ' * chat_width, end='')
+            # Format: [HH:MM:SS] <username> message
+            # or:      [HH:MM:SS] [PM] <username> message
+            time_str = self.term.bright_black(f'[{timestamp}]')
 
-            with self.term.location(0, line_num):
-                timestamp = msg_data['timestamp']
-                username = msg_data['username']
-                message = msg_data['message']
-                prefix = msg_data['prefix']
-                color = msg_data['color']
+            # Get the color function from terminal
+            color_func = getattr(self.term, color, self.term.white)
 
-                # Format: [HH:MM:SS] <username> message
-                # or:      [HH:MM:SS] [PM] <username> message
-                time_str = self.term.bright_black(f'[{timestamp}]')
+            if prefix:
+                username_str = f'{prefix} {color_func(f"<{username}>")} '
+            else:
+                username_str = f'{color_func(f"<{username}>")} '
 
-                # Get the color function from terminal
-                color_func = getattr(self.term, color, self.term.white)
+            # Calculate max message width
+            prefix_len = len(f'[{timestamp}] ')
+            if prefix:
+                prefix_len += len(f'{prefix} ')
+            prefix_len += len(f'<{username}> ')
 
-                if prefix:
-                    username_str = f'{prefix} {color_func(f"<{username}>")} '
-                else:
-                    username_str = f'{color_func(f"<{username}>")} '
-
-                # Calculate max message width
-                prefix_len = len(f'[{timestamp}] ')
-                if prefix:
-                    prefix_len += len(f'{prefix} ')
-                prefix_len += len(f'<{username}> ')
-
-                max_msg_width = chat_width - prefix_len
-                
-                # Wrap message if needed (with 2 column padding after wrap)
+            max_msg_width = chat_width - prefix_len
+            
+            # Wrap message if needed (with 2 column padding after wrap)
+            if max_msg_width > 0:
                 wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
                                              break_long_words=True, 
                                              break_on_hyphens=True)
-                
-                # Check if my username is mentioned in the message
-                if self.user and self.user.name and self.user.name in message:
-                    # Highlight the entire message with reverse video
-                    wrapped_lines = [self.term.reverse(line) for line in wrapped_lines]
-                
-                # Print first line with full prefix
-                if wrapped_lines:
-                    print(f'{time_str} {username_str}{wrapped_lines[0]}', end='', flush=True)
-                    
-                    # Print continuation lines with padding (2 spaces after wrap point)
-                    for wrap_line_idx, continuation in enumerate(wrapped_lines[1:], 1):
-                        continuation_line_num = line_num + wrap_line_idx
-                        # Stop if we've run out of screen space
-                        if continuation_line_num >= chat_height + 2:
-                            break
-                        with self.term.location(0, continuation_line_num):
-                            print(' ' * chat_width, end='')
-                        with self.term.location(0, continuation_line_num):
-                            indent = ' ' * (prefix_len + 2)  # 2 column padding
-                            print(f'{indent}{continuation}', end='', flush=True)
-                else:
-                    # Empty message
-                    print(f'{time_str} {username_str}', end='', flush=True)
+            else:
+                wrapped_lines = [message]
+            
+            if not wrapped_lines:
+                wrapped_lines = ['']
+            
+            # Check if my username is mentioned in the message
+            if self.user and self.user.name and self.user.name in message:
+                # Highlight the entire message with reverse video
+                wrapped_lines = [self.term.reverse(line) for line in wrapped_lines]
+            
+            # Print first line with full prefix
+            with self.term.location(0, current_line):
+                print(' ' * chat_width, end='')
+            with self.term.location(0, current_line):
+                print(f'{time_str} {username_str}{wrapped_lines[0]}', end='', flush=True)
+            current_line += 1
+            
+            # Print continuation lines with padding (2 spaces after wrap point)
+            for continuation in wrapped_lines[1:]:
+                if current_line >= chat_height + 2:
+                    break
+                with self.term.location(0, current_line):
+                    print(' ' * chat_width, end='')
+                with self.term.location(0, current_line):
+                    indent = ' ' * (prefix_len + 2)  # 2 column padding
+                    print(f'{indent}{continuation}', end='', flush=True)
+                current_line += 1
 
         # Clear any remaining lines
-        for i in range(len(visible_messages), chat_height):
-            line_num = 2 + i
-            with self.term.location(0, line_num):
+        while current_line < chat_height + 2:
+            with self.term.location(0, current_line):
                 print(' ' * chat_width, end='', flush=True)
+            current_line += 1
 
     def render_users(self):
         """Render the user list on the right side of the screen.
