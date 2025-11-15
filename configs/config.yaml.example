@@ -22,6 +22,10 @@ restart_delay: 5
 # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
 log_level: WARNING
 
+# Log file directory (relative to project root or absolute path)
+# If not specified, defaults to juiced/logs/
+log_path: logs
+
 # TUI-specific settings
 tui:
   # Theme name (see themes/ directory)

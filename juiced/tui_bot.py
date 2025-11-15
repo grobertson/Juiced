@@ -88,6 +88,9 @@ class TUIBot(Bot):
             config_file (str): Path to configuration file
             **kwargs: Keyword arguments passed to Bot.__init__ (domain, channel, user, etc.)
         """
+        # Extract log_path from kwargs before passing to parent
+        self.log_path = kwargs.pop('log_path', 'logs')
+        
         super().__init__(**kwargs)
 
         # Initialize terminal
@@ -435,12 +438,40 @@ class TUIBot(Bot):
         return False
 
     def _setup_logging(self):
-        """Setup file logging for errors and chat history."""
-        # Create logs directory if it doesn't exist
-        log_dir = Path(__file__).parent / 'logs'
-        log_dir.mkdir(exist_ok=True)
+        """Setup file logging for errors and chat history.
+        
+        CRITICAL: Disables console output to prevent corrupting TUI display.
+        All logs go to files only.
+        """
+        # DISABLE all console output - this is a TUI, stdout corrupts the display!
+        # Remove any existing handlers from root logger and this logger
+        root_logger = logging.getLogger()
+        root_logger.handlers.clear()
+        self.logger.handlers.clear()
+        
+        # Prevent propagation to root logger (which might have console handlers)
+        self.logger.propagate = False
+        
+        # Determine log directory from config
+        if Path(self.log_path).is_absolute():
+            log_dir = Path(self.log_path)
+        else:
+            # Relative to project root (parent of juiced package)
+            project_root = Path(__file__).parent.parent
+            log_dir = project_root / self.log_path
+        
+        log_dir.mkdir(parents=True, exist_ok=True)
 
-        # Error log file
+        # Debug log file (all levels)
+        debug_log = log_dir / 'tui_debug.log'
+        debug_handler = logging.FileHandler(debug_log, encoding='utf-8')
+        debug_handler.setLevel(logging.DEBUG)
+        debug_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        ))
+        self.logger.addHandler(debug_handler)
+        
+        # Error log file (warnings and above)
         error_log = log_dir / 'tui_errors.log'
         error_handler = logging.FileHandler(error_log, encoding='utf-8')
         error_handler.setLevel(logging.WARNING)
@@ -452,8 +483,11 @@ class TUIBot(Bot):
         # Chat history log file
         chat_log = log_dir / f'chat_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
         self.chat_log_file = open(chat_log, 'a', encoding='utf-8')
-        self.logger.info(f'Chat logging to: {chat_log}')
+        
+        # Log where files are being written (these go to files, not console)
+        self.logger.info(f'Debug logging to: {debug_log}')
         self.logger.info(f'Error logging to: {error_log}')
+        self.logger.info(f'Chat logging to: {chat_log}')
 
     @staticmethod
     def format_duration(seconds):
