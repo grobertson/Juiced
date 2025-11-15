@@ -1322,8 +1322,12 @@ class TUIBot(Bot):
             self.tab_completion_index = (self.tab_completion_index + 1) % len(self.tab_completion_matches)
             match = self.tab_completion_matches[self.tab_completion_index]
             
+            self.logger.debug(f'Cycling: index={self.tab_completion_index}, match="{match}", start={self.tab_completion_start}, buffer_before="{self.input_buffer}"')
+            
             # Replace from the start position to the end
             self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
+            
+            self.logger.debug(f'Cycling: buffer_after="{self.input_buffer}"')
             self.render_input()
             return
 
@@ -1338,22 +1342,24 @@ class TUIBot(Bot):
         # Extract the partial word
         partial = self.input_buffer[start_pos:cursor_pos]
         
-        self.logger.debug(f'Tab completion: partial="{partial}", start_pos={start_pos}, buffer="{self.input_buffer}"')
+        self.logger.debug(f'Tab completion: partial="{partial}", start_pos={start_pos}, cursor_pos={cursor_pos}, buffer="{self.input_buffer}"')
         
         # Determine what we're completing based on content
         matches = []
         if partial.startswith('#'):
-            # Emote completion - need at least '#' character
+            # Emote completion - matches already include # prefix
             if len(partial) >= 1:
                 matches = self._get_completion_matches(partial, is_emote=True)
                 self.logger.debug(f'Emote completion: found {len(matches)} matches, emote_list_size={len(self.emotes)}')
+                if matches:
+                    self.logger.debug(f'First match: "{matches[0]}"')
         elif len(partial) >= 2:
             # Username completion - need at least 2 characters
             matches = self._get_completion_matches(partial, is_emote=False)
             self.logger.debug(f'Username completion: found {len(matches)} matches')
         else:
             # Not enough characters to complete
-            self.logger.debug(f'Not enough characters to complete')
+            self.logger.debug(f'Not enough characters to complete: partial="{partial}", len={len(partial)}')
             return
         
         if matches:
@@ -1362,8 +1368,9 @@ class TUIBot(Bot):
             self.tab_completion_index = 0
             self.tab_completion_start = start_pos
             
-            # Apply first match
+            # Apply first match - it already has the complete text including # for emotes
             self.input_buffer = self.input_buffer[:start_pos] + matches[0]
+            self.logger.debug(f'Applied match: buffer is now "{self.input_buffer}"')
             self.render_input()
 
     def _get_completion_matches(self, partial, is_emote):
