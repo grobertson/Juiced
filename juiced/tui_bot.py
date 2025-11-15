@@ -942,6 +942,36 @@ class TUIBot(Bot):
         """Legacy method - redirect to top status bar."""
         self.render_top_status()
 
+    def _calculate_message_wrapped_lines(self, message, chat_width, timestamp, username, prefix):
+        """Calculate wrapped lines for a message.
+        
+        Args:
+            message (str): The message text to wrap
+            chat_width (int): Available width for chat area
+            timestamp (str): Message timestamp
+            username (str): Username of sender
+            prefix (str): Message prefix (e.g., '[PM]')
+            
+        Returns:
+            list: List of wrapped lines, or single-item list with original message if wrapping not possible
+        """
+        # Calculate prefix length
+        prefix_len = len(f'[{timestamp}] ')
+        if prefix:
+            prefix_len += len(f'{prefix} ')
+        prefix_len += len(f'<{username}> ')
+        
+        # Calculate available width for message
+        max_msg_width = chat_width - prefix_len
+        
+        if max_msg_width > 0:
+            wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
+                                         break_long_words=True, 
+                                         break_on_hyphens=True)
+            return wrapped_lines if wrapped_lines else ['']
+        else:
+            return [message]
+
     def render_chat(self):
         """Render the chat history area with scrolling support."""
         # Calculate dimensions - now we have 4 lines used (top status, separator, bottom status, input)
@@ -960,20 +990,11 @@ class TUIBot(Bot):
             message = msg_data['message']
             prefix = msg_data['prefix']
             
-            # Calculate how many lines this message will take
-            prefix_len = len(f'[{timestamp}] ')
-            if prefix:
-                prefix_len += len(f'{prefix} ')
-            prefix_len += len(f'<{username}> ')
-            
-            max_msg_width = chat_width - prefix_len
-            if max_msg_width > 0:
-                wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
-                                             break_long_words=True, 
-                                             break_on_hyphens=True)
-                lines_needed = max(1, len(wrapped_lines))  # At least 1 line even if empty
-            else:
-                lines_needed = 1
+            # Calculate how many lines this message will take using helper method
+            wrapped_lines = self._calculate_message_wrapped_lines(
+                message, chat_width, timestamp, username, prefix
+            )
+            lines_needed = len(wrapped_lines)
             
             # Check if this message fits
             if lines_used + lines_needed <= chat_height:
@@ -1009,24 +1030,10 @@ class TUIBot(Bot):
             else:
                 username_str = f'{color_func(f"<{username}>")} '
 
-            # Calculate max message width
-            prefix_len = len(f'[{timestamp}] ')
-            if prefix:
-                prefix_len += len(f'{prefix} ')
-            prefix_len += len(f'<{username}> ')
-
-            max_msg_width = chat_width - prefix_len
-            
-            # Wrap message if needed (with 2 column padding after wrap)
-            if max_msg_width > 0:
-                wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
-                                             break_long_words=True, 
-                                             break_on_hyphens=True)
-            else:
-                wrapped_lines = [message]
-            
-            if not wrapped_lines:
-                wrapped_lines = ['']
+            # Wrap message using helper method
+            wrapped_lines = self._calculate_message_wrapped_lines(
+                message, chat_width, timestamp, username, prefix
+            )
             
             # Check if my username is mentioned in the message
             if self.user and self.user.name and self.user.name in message:
