@@ -1036,6 +1036,12 @@ class TUIBot(Bot):
                 message, chat_width, timestamp, username, prefix
             )
             
+            # Calculate prefix length for continuation line indentation
+            prefix_len = len(f'[{timestamp}] ')
+            if prefix:
+                prefix_len += len(f'{prefix} ')
+            prefix_len += len(f'<{username}> ')
+            
             # Check if my username is mentioned in the message
             if self.user and self.user.name and self.user.name in message:
                 # Highlight the entire message with reverse video
