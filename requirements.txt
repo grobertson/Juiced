@@ -1,0 +1,17 @@
+# Juiced - CyTube TUI Client Dependencies
+
+# Terminal UI
+blessed>=1.19.0
+
+# WebSocket and Socket.IO
+python-socketio[client]>=5.0.0
+websocket-client>=1.0.0
+
+# Configuration
+PyYAML>=6.0
+
+# HTTP client (for Socket.IO)
+requests>=2.25.0
+
+# Async support
+aiohttp>=3.8.0

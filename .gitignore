@@ -1,0 +1,63 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# User configs (keep examples)
+configs/*.yaml
+configs/*.json
+!configs/*.example
+
+# Logs
+logs/*.log
+logs/chat_*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.directory
+
+# Backup files
+*.bak
+*.old
+*.orig
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Juiced specific
+juiced.log
+*.pid
