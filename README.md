@@ -108,7 +108,7 @@ The Grindhouse mods, for everything you guys do.
 
 Everyone who hangs out in 420Grindhouse suffering the Turkeys and enjoying the unexpected gems.
 
-Extracted with  from [Rosey-Robot](https://github.com/grobertson/Rosey-Robot)  
+Extracted with love from [Rosey-Robot](https://github.com/grobertson/Rosey-Robot)  
 
 Inspired by the golden age of IRC clients. RIP BitchX
 
