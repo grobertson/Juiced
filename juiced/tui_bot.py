@@ -765,15 +765,22 @@ class TUIBot(Bot):
         if not data:
             return
         
-        # Extract emote names from the emote objects and prepend # for tab completion
-        # CyTube emotes are objects like: {'name': 'smile', 'image': '...', ...}
+        # Extract emote names from the emote objects
+        # CyTube emotes are objects like: {'name': '#smile', 'image': '...', ...}
+        # Note: CyTube emote names already include the # prefix
         self.emotes = []
         for emote in data:
             if isinstance(emote, dict) and 'name' in emote:
-                self.emotes.append('#' + emote['name'])
+                name = emote['name']
+                # Ensure name has # prefix (some might not)
+                if not name.startswith('#'):
+                    name = '#' + name
+                self.emotes.append(name)
             elif isinstance(emote, str):
                 # Sometimes they might just be strings
-                self.emotes.append('#' + emote)
+                if not emote.startswith('#'):
+                    emote = '#' + emote
+                self.emotes.append(emote)
         
         self.logger.debug(f'Received {len(self.emotes)} emotes from server. Sample: {self.emotes[:5] if self.emotes else []}')
         
