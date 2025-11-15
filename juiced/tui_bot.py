@@ -1318,12 +1318,18 @@ class TUIBot(Bot):
             self.tab_completion_index = (self.tab_completion_index + 1) % len(self.tab_completion_matches)
             match = self.tab_completion_matches[self.tab_completion_index]
             
+            # Debug logging
+            self.logger.debug(f'Cycling: start={self.tab_completion_start}, is_emote={self.tab_completion_is_emote}, match="{match}", buffer_before="{self.input_buffer}"')
+            
             # Replace from the start position to the end
             # Add # prefix if completing an emote
             if self.tab_completion_is_emote:
                 self.input_buffer = self.input_buffer[:self.tab_completion_start] + '#' + match
             else:
                 self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
+            
+            # Debug logging
+            self.logger.debug(f'Cycling: buffer_after="{self.input_buffer}"')
             self.render_input()
             return
 
@@ -1341,7 +1347,7 @@ class TUIBot(Bot):
                 matches = self._get_emote_matches(partial)
                 
                 # Log for debugging
-                self.logger.debug(f'Emote completion: partial="{partial}", matches={len(matches)} found')
+                self.logger.debug(f'Emote completion: partial="{partial}", matches={len(matches)} found, last_hash={last_hash}')
                 
                 if matches:
                     # Store state for cycling
@@ -1350,8 +1356,14 @@ class TUIBot(Bot):
                     self.tab_completion_start = last_hash
                     self.tab_completion_is_emote = True  # Flag that this is emote completion
                     
+                    # Debug logging
+                    self.logger.debug(f'First match: start={last_hash}, buffer_before="{self.input_buffer}", match="{matches[0]}"')
+                    
                     # Apply first match (prepend # since matches don't include it)
                     self.input_buffer = self.input_buffer[:last_hash] + '#' + matches[0]
+                    
+                    # Debug logging
+                    self.logger.debug(f'First match: buffer_after="{self.input_buffer}"')
                     self.render_input()
                 return
         
