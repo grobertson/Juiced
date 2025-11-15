@@ -125,6 +125,9 @@ class TUIBot(Bot):
         self.tab_completion_index = 0
         self.tab_completion_start = 0
 
+        # Emote list from channel
+        self.emotes = []  # List of emote names (without # prefix)
+
         # Scrolling
         self.scroll_offset = 0
 
@@ -163,6 +166,7 @@ class TUIBot(Bot):
         self.on('queue', self.handle_queue)
         self.on('playlist', self.handle_playlist)
         self.on('login', self.handle_login)
+        self.on('emoteList', self.handle_emote_list)  # CyTube emote list
 
     def _on_queue(self, _, data):
         """Override base Bot's queue handler to add retry logic.
@@ -713,6 +717,32 @@ class TUIBot(Bot):
         """
         self.status_message = f'Connected to {self.channel.name}'
         self.render_status()
+
+    async def handle_emote_list(self, _, data):
+        """Handle emote list from CyTube.
+
+        Args:
+            _ (str): Event name (unused)
+            data (list): List of emote objects from CyTube
+        
+        CyTube sends emotes as a list of objects with 'name', 'image', etc.
+        We extract just the names for tab completion.
+        """
+        if not data:
+            return
+        
+        # Extract emote names from the emote objects
+        # CyTube emotes are objects like: {'name': 'smile', 'image': '...', ...}
+        self.emotes = []
+        for emote in data:
+            if isinstance(emote, dict) and 'name' in emote:
+                self.emotes.append(emote['name'])
+            elif isinstance(emote, str):
+                # Sometimes they might just be strings
+                self.emotes.append(emote)
+        
+        # Sort for consistent tab completion
+        self.emotes.sort(key=str.lower)
 
     def render_screen(self):
         """Render the complete TUI layout.
@@ -1336,10 +1366,6 @@ class TUIBot(Bot):
         matches = []
         
         for username in self.channel.userlist.keys():
-            # Skip usernames with underscores (CyTube bug workaround)
-            if '_' in username:
-                continue
-                
             if username.lower().startswith(partial_lower):
                 matches.append(username)
         
@@ -1356,22 +1382,25 @@ class TUIBot(Bot):
         Returns:
             list: List of matching emotes (with # prefix, no suffix)
         """
-        # Common CyTube emotes - in a real implementation, this would come from channel config
-        # These are typical emotes found on CyTube channels
-        common_emotes = [
-            'smile', 'sad', 'laugh', 'lol', 'angry', 'rage', 'heart', 'love',
-            'thumbsup', 'thumbsdown', 'thinking', 'think', 'wave', 'hello',
-            'party', 'dance', 'fire', 'hot', 'cool', 'sunglasses', 'eyes',
-            'shrug', 'idk', 'check', 'yes', 'cross', 'no', 'question',
-            'exclamation', 'star', 'sparkles', 'kappa', 'pogchamp', 'lul',
-            'monkas', 'omegalul', 'pepega', 'pepe', 'sadge', 'pog', 'copium'
-        ]
+        # Use emotes from channel if available, otherwise fallback to common emotes
+        if self.emotes:
+            emote_list = self.emotes
+        else:
+            # Fallback to common CyTube emotes if channel emotes not yet received
+            emote_list = [
+                'smile', 'sad', 'laugh', 'lol', 'angry', 'rage', 'heart', 'love',
+                'thumbsup', 'thumbsdown', 'thinking', 'think', 'wave', 'hello',
+                'party', 'dance', 'fire', 'hot', 'cool', 'sunglasses', 'eyes',
+                'shrug', 'idk', 'check', 'yes', 'cross', 'no', 'question',
+                'exclamation', 'star', 'sparkles', 'kappa', 'pogchamp', 'lul',
+                'monkas', 'omegalul', 'pepega', 'pepe', 'sadge', 'pog', 'copium'
+            ]
         
         partial_lower = partial.lower()
         matches = []
         
-        for emote in common_emotes:
-            if emote.startswith(partial_lower):
+        for emote in emote_list:
+            if emote.lower().startswith(partial_lower):
                 # Return with # prefix, no suffix
                 matches.append('#' + emote)
         
