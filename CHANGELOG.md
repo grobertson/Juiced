@@ -5,15 +5,14 @@ All notable changes to Juiced will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.2.6] - 2025-11-14
-
 ## [v0.2.7] - 2025-11-15
 
 ### Changed
 
 - Display-only: Moderator+ users are shown as `@username` in the chat area
-	(presentation only). Stored usernames and logs are unchanged.
+(presentation only). Stored usernames and logs are unchanged.
 
+## [v0.2.6] - 2025-11-14
 
 ### Fixed
 
