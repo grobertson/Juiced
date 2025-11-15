@@ -98,6 +98,11 @@ MIT License  Use it, fork it, make it yours.
 
 ##  Acknowledgments
 
+KGMoon, founder of #420Grindhouse and a damn good dude.
+KevinChrist - For volunteering to beta test immediately!
+#420Grindhouse, the place to riff on B movies, and one hell of a good community.
+The Grindhouse mods, for everything you guys do.
+Everyone who hangs out in 420Grindhouse suffering the Turkeys and enjoying the unexpected gems.
 Extracted with  from [Rosey-Robot](https://github.com/grobertson/Rosey-Robot)  
 Inspired by the golden age of IRC clients  
 Built for the CyTube community
