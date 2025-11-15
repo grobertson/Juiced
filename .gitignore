@@ -61,3 +61,6 @@ htmlcov/
 # Juiced specific
 juiced.log
 *.pid
+
+# Release archives
+releases/
