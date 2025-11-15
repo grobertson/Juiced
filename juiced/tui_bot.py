@@ -80,15 +80,15 @@ class TUIBot(Bot):
         5: '&',      # Founder
     }
 
-    def __init__(self, *args, tui_config=None, **kwargs):
+    def __init__(self, tui_config=None, config_file='config.yaml', **kwargs):
         """Initialize the TUI bot.
 
         Args:
-            *args: Positional arguments passed to Bot.__init__
             tui_config (dict): TUI-specific configuration options
-            **kwargs: Keyword arguments passed to Bot.__init__
+            config_file (str): Path to configuration file
+            **kwargs: Keyword arguments passed to Bot.__init__ (domain, channel, user, etc.)
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
         # Initialize terminal
         self.term = Terminal()
@@ -100,7 +100,7 @@ class TUIBot(Bot):
         self.hide_afk_users = self.tui_config.get('hide_afk_users', False)  # Hide AFK users from list
         
         # Store config file path for persistence
-        self.config_file = args[0] if args else 'config.json'
+        self.config_file = config_file
         
         # Load theme
         theme_name = self.tui_config.get('theme', 'default')

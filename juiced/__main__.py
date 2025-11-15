@@ -41,7 +41,7 @@ def main():
     tui_config = config.pop('tui', {})
     
     # Create and run bot
-    bot = TUIBot(config_file, tui_config=tui_config, **kwargs)
+    bot = TUIBot(tui_config=tui_config, config_file=config_file, **kwargs)
     
     try:
         asyncio.run(bot.run_tui())
