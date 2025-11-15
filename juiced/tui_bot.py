@@ -1094,7 +1094,8 @@ class TUIBot(Bot):
             with self.term.location(user_list_x - 1, i):
                 print(border_func('│'), end='', flush=True)
 
-        # Separate users by rank: mods (rank >= 2) always at top, then regular users, then AFK non-mods
+        # Separate users by rank: higher ranks at top, then by activity status
+        # Rank hierarchy: Owner (4+) > Admin (3) > Mod (2) > Registered (1) > Guest (0)
         mods = []           # All users with rank >= 2, AFK or not
         regular_users = []  # Active regular users
         afk_users = []      # AFK regular users (rank < 2)
@@ -1107,12 +1108,14 @@ class TUIBot(Bot):
             else:  # Active regular users in middle
                 regular_users.append(user)
         
-        # Sort each group alphabetically by name (case-insensitive)
-        mods.sort(key=lambda u: u.name.lower())
+        # Sort mods by rank (descending), then alphabetically within same rank
+        mods.sort(key=lambda u: (-u.rank, u.name.lower()))
+        
+        # Sort other groups alphabetically by name (case-insensitive)
         regular_users.sort(key=lambda u: u.name.lower())
         afk_users.sort(key=lambda u: u.name.lower())
         
-        # Combine lists: mods first (even if AFK), then active users, then AFK regular users
+        # Combine lists: mods first (by rank, then alpha), then active users, then AFK regular users
         sorted_users = mods + regular_users
         if not self.hide_afk_users:
             sorted_users += afk_users
