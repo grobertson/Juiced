@@ -126,7 +126,7 @@ class TUIBot(Bot):
         self.tab_completion_start = 0
 
         # Emote list from channel
-        self.emotes = []  # List of emote names (without # prefix)
+        self.emotes = []  # List of emote names (WITH # prefix for tab completion)
 
         # Scrolling
         self.scroll_offset = 0
@@ -741,6 +741,8 @@ class TUIBot(Bot):
                 # Sometimes they might just be strings
                 self.emotes.append('#' + emote)
         
+        self.logger.debug(f'Received {len(self.emotes)} emotes from server. Sample: {self.emotes[:5] if self.emotes else []}')
+        
         # Sort for consistent tab completion
         self.emotes.sort(key=str.lower)
 
@@ -1336,16 +1338,22 @@ class TUIBot(Bot):
         # Extract the partial word
         partial = self.input_buffer[start_pos:cursor_pos]
         
+        self.logger.debug(f'Tab completion: partial="{partial}", start_pos={start_pos}, buffer="{self.input_buffer}"')
+        
         # Determine what we're completing based on content
+        matches = []
         if partial.startswith('#'):
             # Emote completion - need at least '#' character
             if len(partial) >= 1:
                 matches = self._get_completion_matches(partial, is_emote=True)
+                self.logger.debug(f'Emote completion: found {len(matches)} matches, emote_list_size={len(self.emotes)}')
         elif len(partial) >= 2:
             # Username completion - need at least 2 characters
             matches = self._get_completion_matches(partial, is_emote=False)
+            self.logger.debug(f'Username completion: found {len(matches)} matches')
         else:
             # Not enough characters to complete
+            self.logger.debug(f'Not enough characters to complete')
             return
         
         if matches:
