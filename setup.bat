@@ -72,13 +72,13 @@ if not exist "configs\config.yaml" (
         echo.
         echo Updating config file...
 
-        REM Use PowerShell to update the YAML file
-        REM Note: We replace the quoted values to preserve quotes
-        powershell -Command "(Get-Content configs\config.yaml) -replace '\"your-channel-name\"', '\"%CYTUBE_CHANNEL%\"' | Set-Content configs\config.yaml"
+        REM Use PowerShell to update the YAML file with proper escaping
+        REM Pass values as arguments to avoid injection attacks
+        powershell -Command "$content = Get-Content 'configs\config.yaml'; $content -replace '\"your-channel-name\"', ('\"' + [regex]::Escape($args[0]) + '\"') | Set-Content 'configs\config.yaml'" "%CYTUBE_CHANNEL%"
 
         if not "%CYTUBE_USERNAME%"=="null" (
-            powershell -Command "(Get-Content configs\config.yaml) -replace '\"your-username\"', '\"%CYTUBE_USERNAME%\"' | Set-Content configs\config.yaml"
-            powershell -Command "(Get-Content configs\config.yaml) -replace '\"your-password\"', '\"%CYTUBE_PASSWORD%\"' | Set-Content configs\config.yaml"
+            powershell -Command "$content = Get-Content 'configs\config.yaml'; $content -replace '\"your-username\"', ('\"' + [regex]::Escape($args[0]) + '\"') | Set-Content 'configs\config.yaml'" "%CYTUBE_USERNAME%"
+            powershell -Command "$content = Get-Content 'configs\config.yaml'; $content -replace '\"your-password\"', ('\"' + [regex]::Escape($args[0]) + '\"') | Set-Content 'configs\config.yaml'" "%CYTUBE_PASSWORD%"
         ) else (
             powershell -Command "(Get-Content configs\config.yaml) -replace 'user:\r?\n  - \"your-username\"\r?\n  - \"your-password\"', 'user: null' | Set-Content configs\config.yaml"
         )
