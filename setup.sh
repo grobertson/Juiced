@@ -43,12 +43,49 @@ if [ ! -f "configs/config.yaml" ]; then
         cp "configs/config.yaml.example" "configs/config.yaml"
         echo "✓ Created configs/config.yaml from example"
         echo ""
-        echo "IMPORTANT: Edit configs/config.yaml with your CyTube credentials"
+        echo "========================================"
+        echo "Configuration Setup"
+        echo "========================================"
+        echo ""
+        echo "Please enter your CyTube connection details:"
+        echo ""
+        
+        read -p "Channel name: " CYTUBE_CHANNEL
+        read -p "Username (or press Enter for guest): " CYTUBE_USERNAME
+        
+        if [ -n "$CYTUBE_USERNAME" ]; then
+            read -sp "Password: " CYTUBE_PASSWORD
+            echo ""
+        else
+            CYTUBE_USERNAME="null"
+            CYTUBE_PASSWORD="null"
+        fi
+        
+        echo ""
+        echo "Updating config file..."
+        
+        # Update channel name
+        sed -i.bak "s/channel: your-channel-name/channel: $CYTUBE_CHANNEL/" "configs/config.yaml"
+        
+        # Update credentials
+        if [ "$CYTUBE_USERNAME" != "null" ]; then
+            sed -i.bak "s/your-username/$CYTUBE_USERNAME/" "configs/config.yaml"
+            sed -i.bak "s/your-password/$CYTUBE_PASSWORD/" "configs/config.yaml"
+        else
+            # Replace user array with null for guest access
+            sed -i.bak '/user:/,/  - your-password/c\user: null' "configs/config.yaml"
+        fi
+        
+        # Remove backup file
+        rm -f "configs/config.yaml.bak"
+        
+        echo "✓ Config file updated with your credentials"
+        echo ""
     else
         echo "WARNING: configs/config.yaml.example not found"
     fi
 else
-    echo "✓ configs/config.yaml already exists"
+    echo "✓ configs/config.yaml already exists (keeping existing config)"
 fi
 echo ""
 
