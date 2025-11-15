@@ -107,10 +107,6 @@ class Bot:
         self.domain = domain
         self.channel = Channel(*to_sequence(channel))
         self.user = User(*to_sequence(user))
-        try:
-            self.loop = asyncio.get_running_loop()
-        except RuntimeError:
-            self.loop = asyncio.new_event_loop()
         self.server = None
         self.socket = None
         self.handlers = collections.defaultdict(list)
@@ -390,7 +386,7 @@ class Bot:
         if self.server is None:
             await self.get_socket_config()
         self.logger.info('connect %s', self.server)
-        self.socket = await self.socket_io(self.server, loop=self.loop)
+        self.socket = await self.socket_io(self.server, loop=asyncio.get_running_loop())
         self.connect_time = time.time()  # Record connection time
 
     async def login(self):

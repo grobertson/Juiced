@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.6] - 2025-11-14
 
 ### Fixed
+- **Critical:** Fixed asyncio event loop error causing startup crashes ("attached to a different loop")
 - Message wrapping now works correctly for all messages (no more truncation)
 - Tab completion works with usernames containing underscores
 - Emote tab completion now uses actual channel emotes from CyTube
