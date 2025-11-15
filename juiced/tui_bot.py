@@ -722,6 +722,7 @@ class TUIBot(Bot):
                     self.render_top_status()
                     self.pending_media_uid = None
             except (ValueError, AttributeError):
+                # Media item not in queue yet - will retry when playlist is received
                 pass
 
     async def handle_playlist(self, _, data):
@@ -740,6 +741,7 @@ class TUIBot(Bot):
                     self.render_top_status()
                     self.pending_media_uid = None
             except (ValueError, AttributeError):
+                # Media item still not in playlist - will be handled by next update
                 pass
 
     async def handle_login(self, _, data):
@@ -906,6 +908,7 @@ class TUIBot(Bot):
                     if high_water:
                         left_parts.append(f"📊 Peak: {high_water}")
                 except Exception:
+                    # Database query failed - continue without high water mark
                     pass
             
             # Media runtime and remaining - use cached values from changeMedia
@@ -1235,10 +1238,11 @@ class TUIBot(Bot):
                         # Apply both dim and italic for AFK users
                         colored_str = self.term.dim(self.term.italic(colored_str))
                     except (TypeError, AttributeError):
-                        # Fallback if dim/italic not supported
+                        # Fallback if dim not supported - try italic only
                         try:
                             colored_str = self.term.italic(colored_str)
                         except (TypeError, AttributeError):
+                            # Terminal doesn't support italic/dim formatting - use as-is
                             pass
                 
                 print(f' {colored_str}', end='', flush=True)
@@ -2084,6 +2088,7 @@ class TUIBot(Bot):
                 try:
                     await task
                 except asyncio.CancelledError:
+                    # Task cancellation is expected - suppress the exception
                     pass
 
         except Exception as e:
