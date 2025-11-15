@@ -556,6 +556,29 @@ class TUIBot(Bot):
             self._color_index += 1
         return self.user_colors[username]
 
+    def get_display_username(self, username):
+        """Return display-only username for chat rendering.
+
+        Moderators and above (rank >= 2) are displayed with a leading '@'
+        (e.g., '@alice'). This modifies only the presentation layer; it does
+        not change stored usernames, logs, or any persisted data.
+
+        Args:
+            username (str): Stored username
+
+        Returns:
+            str: Display username (may be prefixed with '@')
+        """
+        try:
+            if self.channel and self.channel.userlist and username in self.channel.userlist:
+                user_obj = self.channel.userlist[username]
+                if getattr(user_obj, 'rank', 0) >= 2:
+                    return '@' + username
+        except Exception:
+            # On any error, fall back to raw username
+            pass
+        return username
+
     def add_chat_line(self, username, message, prefix='', color_override=None):
         """Add a line to the chat history buffer.
 
@@ -1036,19 +1059,8 @@ class TUIBot(Bot):
             message = msg_data['message']
             prefix = msg_data['prefix']
 
-            # Determine displayed username for chat area only. Do NOT modify stored
-            # username values or logs. Moderators and above should be shown as
-            # <@username> while preserving the underlying username string.
-            display_username = username
-            try:
-                if self.channel and self.channel.userlist and username in self.channel.userlist:
-                    user_obj = self.channel.userlist[username]
-                    # Rank >= 2 == moderator or higher
-                    if getattr(user_obj, 'rank', 0) >= 2:
-                        display_username = '@' + username
-            except Exception:
-                # If anything goes wrong looking up the user, fall back to raw username
-                display_username = username
+            # Determine display username (presentation-only)
+            display_username = self.get_display_username(username)
 
             # Calculate how many lines this message will take using helper method
             wrapped_lines = self._calculate_message_wrapped_lines(
@@ -1078,16 +1090,8 @@ class TUIBot(Bot):
             prefix = msg_data['prefix']
             color = msg_data['color']
 
-            # Compute display-only username (prepend '@' for mods+). Do not
-            # change stored username or log output.
-            display_username = username
-            try:
-                if self.channel and self.channel.userlist and username in self.channel.userlist:
-                    user_obj = self.channel.userlist[username]
-                    if getattr(user_obj, 'rank', 0) >= 2:
-                        display_username = '@' + username
-            except Exception:
-                display_username = username
+            # Compute display-only username (presentation only)
+            display_username = self.get_display_username(username)
 
             # Format: [HH:MM:SS] <username> message
             # or:      [HH:MM:SS] [PM] <username> message

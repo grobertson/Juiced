@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.2.6] - 2024-11-14
 
+## [v0.2.7] - 2025-11-15
+
+### Changed
+
+- Display-only: Moderator+ users are shown as `@username` in the chat area
+	(presentation only). Stored usernames and logs are unchanged.
+
+
 ### Fixed
 
 - **Critical:** Fixed RuntimeError preventing TUI startup when using asyncio event loops. Bot now uses `asyncio.get_running_loop()` dynamically instead of storing event loop reference during initialization.
