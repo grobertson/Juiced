@@ -5,3 +5,49 @@
 2025-11-14 22:29:20,819 - juiced.lib.bot - ERROR - network error: SocketIOError('joinChannel response timeout')
 2025-11-14 22:29:20,925 - juiced.lib.bot - ERROR - socket.close(): https://bigapple.cytu.be:8443/socket.io/: RuntimeError("Task <Task pending name='Task-3' coro=<Bot.run() running at D:\\Devel\\Juiced\\juiced\\lib\\bot.py:678> cb=[_wait.<locals>._on_completion() at C:\\Users\\me\\miniforge3\\Lib\\asyncio\\tasks.py:534]> got Future <_GatheringFuture pending> attached to a different loop")
 2025-11-14 22:31:12,525 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 22:40:41,450 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 22:43:42,270 - juiced.lib.bot - WARNING - setUserRank: user abime not in userlist yet
+2025-11-14 22:44:52,352 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'FertilityHollis', 'msg': 'as I was trying to explain to my mom earlier... "Shot on a handicam by people who have no movie making experience or even acting history? Sign me up!!!', 'meta': {}, 'time': 1763189084609}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:44:52,582 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'Thee_Original_Pizza', 'msg': 'She is 8', 'meta': {}, 'time': 1763189084646}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:09,620 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'xTOMSERVOx', 'msg': 'Tromaville', 'meta': {}, 'time': 1763189101718}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:10,472 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'Gabaghoul64', 'msg': 'they gave this guy David Lynch hair', 'meta': {}, 'time': 1763189102554}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:20,557 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'naten530', 'msg': 'Bring me a pair of ya sistas panties"', 'meta': {}, 'time': 1763189112695}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:29,558 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'xTOMSERVOx', 'msg': 'Front or back?', 'meta': {}, 'time': 1763189121640}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:30,536 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'Thee_Original_Pizza', 'msg': 'Here comes the ultimate killing machine', 'meta': {}, 'time': 1763189122698}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:31,938 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'SqueezeMeMacaroni', 'msg': "There's SOV that can compete with any non-SOV and I will die on that hill", 'meta': {}, 'time': 1763189124076}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:36,764 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'AmbsAce', 'msg': "I can't pay attention to anything but the sea anemone on his head", 'meta': {}, 'time': 1763189128873}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:38,864 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'naten530', 'msg': 'lol tom', 'meta': {}, 'time': 1763189131020}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:43,085 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'xTOMSERVOx', 'msg': '1 costs more', 'meta': {}, 'time': 1763189135202}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:46,770 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'xTOMSERVOx', 'msg': 'guess which one', 'meta': {}, 'time': 1763189138873}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:53,923 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'StonedRock', 'msg': 'cardboard shoulders', 'meta': {}, 'time': 1763189146018}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:56,712 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'acidwashvideo', 'msg': 'Methina? yep this is MO', 'meta': {}, 'time': 1763189148800}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:45:59,971 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'makeemsayugh', 'msg': 'this is a decent moltar costume from space ghost', 'meta': {}, 'time': 1763189152023}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:02,656 - juiced.lib.bot - ERROR - trigger userLeave {'name': 'hunchback'}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:03,860 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'SqueezeMeMacaroni', 'msg': 'lol acid', 'meta': {}, 'time': 1763189156011}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:04,330 - juiced.lib.bot - WARNING - setUserRank: user hunchback not in userlist yet
+2025-11-14 22:46:04,449 - juiced.lib.bot - ERROR - trigger addUser {'name': 'hunchback', 'rank': 1, 'profile': {'image': 'https://files.catbox.moe/1subxm.png', 'text': ''}, 'meta': {'afk': False, 'muted': False, 'smuted': False, 'aliases': ['hunchback'], 'ip': 'TqB.9Aw.Nwm.eZA'}}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:04,457 - juiced.lib.bot - ERROR - trigger chatMsg {'username': '[server]', 'msg': 'hunchback joined (aliases: hunchback)', 'meta': {'addClass': 'server-whisper', 'addClassToNameAndTimestamp': True}, 'time': 1763189156487}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:07,871 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'LandoWestCoast', 'msg': 'rejected Mortal Kombat character', 'meta': {}, 'time': 1763189160004}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:11,680 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'xTOMSERVOx', 'msg': 'ha moltar', 'meta': {}, 'time': 1763189163796}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:14,104 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'AmbsAce', 'msg': 'lol acid', 'meta': {}, 'time': 1763189166236}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:14,568 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'CorpseNothing', 'msg': 'not sure why I just thought about it. 2 years ago Beaster Day was played here around Easter time. That was filmed in a town about 30 minutes from me', 'meta': {}, 'time': 1763189166742}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:16,877 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'acidwashvideo', 'msg': '&gt;ugly bag of mostly water', 'meta': {'addClass': 'greentext'}, 'time': 1763189169051}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:23,486 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'Gabaghoul64', 'msg': 'bro kinda got the alien from Meatballs buiild', 'meta': {}, 'time': 1763189175568}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:25,084 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'naten530', 'msg': 'tha ghost wit da most', 'meta': {}, 'time': 1763189177202}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:28,853 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'SqueezeMeMacaroni', 'msg': 'Are you describing people, acid?', 'meta': {}, 'time': 1763189180977}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:29,605 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'Thee_Original_Pizza', 'msg': 'Old Harry Potter', 'meta': {}, 'time': 1763189181715}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:32,757 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'naten530', 'msg': 'fuckin caspah', 'meta': {}, 'time': 1763189184930}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:46:33,364 - juiced.lib.bot - ERROR - trigger chatMsg {'username': 'xTOMSERVOx', 'msg': "Aren't we all sister?", 'meta': {}, 'time': 1763189185524}: NameError("name 'prefix_len' is not defined")
+2025-11-14 22:48:06,994 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 22:52:37,284 - juiced.lib.bot - WARNING - setUserRank: user Dario2635 not in userlist yet
+2025-11-14 22:53:32,745 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 22:54:37,941 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 22:54:39,723 - juiced.lib.bot - WARNING - setUserRank: user BeaArthurDeathCult not in userlist yet
+2025-11-14 22:54:47,111 - juiced.lib.bot - WARNING - setUserRank: user hunchback not in userlist yet
+2025-11-14 22:57:15,178 - juiced.lib.bot - WARNING - setUserRank: user StonedRock not in userlist yet
+2025-11-14 22:59:01,842 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 23:02:38,829 - juiced.lib.bot - WARNING - setCurrent: Item not in queue yet: 544 is not in list
+2025-11-14 23:05:05,372 - juiced.lib.bot - WARNING - setUserRank: user Speedchunk not in userlist yet
+2025-11-14 23:05:33,060 - juiced.lib.bot - WARNING - setUserRank: user PrincessJenny not in userlist yet
+2025-11-14 23:09:52,591 - juiced.lib.bot - WARNING - setUserRank: user ActivateWindows not in userlist yet
+2025-11-14 23:10:45,973 - juiced.lib.bot - WARNING - setUserRank: user bifftango not in userlist yet

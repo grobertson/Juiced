@@ -124,7 +124,6 @@ class TUIBot(Bot):
         self.tab_completion_matches = []
         self.tab_completion_index = 0
         self.tab_completion_start = 0
-        self.tab_completion_is_emote = False  # Track if completing emote (needs # prefix)
 
         # Emote list from channel
         self.emotes = []  # List of emote names (without # prefix)
@@ -732,15 +731,15 @@ class TUIBot(Bot):
         if not data:
             return
         
-        # Extract emote names from the emote objects
+        # Extract emote names from the emote objects and prepend # for tab completion
         # CyTube emotes are objects like: {'name': 'smile', 'image': '...', ...}
         self.emotes = []
         for emote in data:
             if isinstance(emote, dict) and 'name' in emote:
-                self.emotes.append(emote['name'])
+                self.emotes.append('#' + emote['name'])
             elif isinstance(emote, str):
                 # Sometimes they might just be strings
-                self.emotes.append(emote)
+                self.emotes.append('#' + emote)
         
         # Sort for consistent tab completion
         self.emotes.sort(key=str.lower)
@@ -1303,10 +1302,11 @@ class TUIBot(Bot):
     def handle_tab_completion(self):
         """Handle tab completion for usernames and emotes.
 
-        CyTube-specific tab completion:
+        Unified tab completion:
         - Emotes: Start with '#' (e.g., #smi<TAB> -> #smile)
-        - Usernames: After 2+ alphanumeric characters anywhere in text (e.g., ali<TAB> -> alice)
+        - Usernames: 2+ alphanumeric characters (e.g., ali<TAB> -> alice)
         
+        Since usernames never start with '#', there's no conflict.
         Pressing Tab multiple times cycles through matches alphabetically.
         No matches = tab is ignored.
         """
@@ -1320,146 +1320,90 @@ class TUIBot(Bot):
             self.tab_completion_index = (self.tab_completion_index + 1) % len(self.tab_completion_matches)
             match = self.tab_completion_matches[self.tab_completion_index]
             
-            # Debug logging
-            self.logger.debug(f'Cycling: start={self.tab_completion_start}, is_emote={self.tab_completion_is_emote}, match="{match}", buffer_before="{self.input_buffer}"')
-            
             # Replace from the start position to the end
-            # Add # prefix if completing an emote
-            if self.tab_completion_is_emote:
-                self.input_buffer = self.input_buffer[:self.tab_completion_start] + '#' + match
-            else:
-                self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
-            
-            # Debug logging
-            self.logger.debug(f'Cycling: buffer_after="{self.input_buffer}"')
+            self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
             self.render_input()
             return
 
         cursor_pos = len(self.input_buffer)
         
-        # Check for emote completion (starts with #)
-        # Find the last # in the buffer
-        last_hash = self.input_buffer.rfind('#')
-        if last_hash >= 0 and last_hash < cursor_pos:
-            # Make sure there's no whitespace between # and cursor
-            text_after_hash = self.input_buffer[last_hash + 1:cursor_pos]
-            if ' ' not in text_after_hash:
-                # Extract partial emote name after #
-                partial = text_after_hash
-                matches = self._get_emote_matches(partial)
-                
-                # Log for debugging
-                self.logger.debug(f'Emote completion: partial="{partial}", matches={len(matches)} found, last_hash={last_hash}, input_buffer="{self.input_buffer}"')
-                
-                if matches:
-                    # Store state for cycling
-                    self.tab_completion_matches = matches
-                    self.tab_completion_index = 0
-                    self.tab_completion_start = last_hash
-                    self.tab_completion_is_emote = True  # Flag that this is emote completion
-                    
-                    # Debug logging
-                    self.logger.debug(f'First match: start={last_hash}, buffer_before="{self.input_buffer}", match="{matches[0]}"')
-                    
-                    # Apply first match (prepend # since matches don't include it)
-                    self.input_buffer = self.input_buffer[:last_hash] + '#' + matches[0]
-                    
-                    # Debug logging
-                    self.logger.debug(f'First match: buffer_after="{self.input_buffer}"')
-                    self.render_input()
-                else:
-                    # No matches found - log it
-                    self.logger.debug(f'Emote completion: NO MATCHES for partial="{partial}"')
-                return
-        
-        # Check for username completion (2+ alphanumeric chars)
         # Find the start of the current word (working backwards from cursor)
         start_pos = cursor_pos - 1
-        while start_pos >= 0 and self.input_buffer[start_pos].isalnum():
+        while start_pos >= 0 and (self.input_buffer[start_pos].isalnum() or self.input_buffer[start_pos] in ['#', '_']):
             start_pos -= 1
         start_pos += 1  # Move to first char of the word
         
-        # Extract the partial username
+        # Extract the partial word
         partial = self.input_buffer[start_pos:cursor_pos]
         
-        # Only attempt username completion if we have 2+ characters
-        if len(partial) >= 2:
-            matches = self._get_username_matches(partial)
-            
-            if matches:
-                # Store state for cycling
-                self.tab_completion_matches = matches
-                self.tab_completion_index = 0
-                self.tab_completion_start = start_pos
-                self.tab_completion_is_emote = False  # Flag that this is username completion
-                
-                # Apply first match (no prefix or suffix)
-                self.input_buffer = self.input_buffer[:start_pos] + matches[0]
-                self.render_input()
-
-    def _get_username_matches(self, partial):
-        """Get list of usernames matching the partial string.
-
-        Args:
-            partial (str): Partial username to match (minimum 2 characters)
-
-        Returns:
-            list: List of matching usernames, sorted alphabetically
-        """
-        if not self.channel or not self.channel.userlist:
-            return []
+        # Determine what we're completing based on content
+        if partial.startswith('#'):
+            # Emote completion - need at least '#' character
+            if len(partial) >= 1:
+                matches = self._get_completion_matches(partial, is_emote=True)
+        elif len(partial) >= 2:
+            # Username completion - need at least 2 characters
+            matches = self._get_completion_matches(partial, is_emote=False)
+        else:
+            # Not enough characters to complete
+            return
         
+        if matches:
+            # Store state for cycling
+            self.tab_completion_matches = matches
+            self.tab_completion_index = 0
+            self.tab_completion_start = start_pos
+            
+            # Apply first match
+            self.input_buffer = self.input_buffer[:start_pos] + matches[0]
+            self.render_input()
+
+    def _get_completion_matches(self, partial, is_emote):
+        """Get matching completions for the given partial text.
+        
+        Unified tab completion matching for both usernames and emotes.
+        Since emotes are stored with # prefix, matching is straightforward.
+        
+        Args:
+            partial: The text to complete (may include # prefix for emotes)
+            is_emote: True to search emotes, False to search usernames
+        
+        Returns:
+            List of matching strings (emotes include # prefix, usernames don't)
+        """
         partial_lower = partial.lower()
         matches = []
         
-        for username in self.channel.userlist.keys():
-            if username.lower().startswith(partial_lower):
-                matches.append(username)
+        if is_emote:
+            # Emotes stored with # prefix (e.g., ['#smile', '#lol', '#kappa'])
+            if self.emotes:
+                emote_list = self.emotes
+            else:
+                # Fallback to common CyTube emotes if channel emotes not yet received
+                # Add # prefix to fallback list too
+                emote_list = [
+                    '#smile', '#sad', '#laugh', '#lol', '#angry', '#rage', '#heart', '#love',
+                    '#thumbsup', '#thumbsdown', '#thinking', '#think', '#wave', '#hello',
+                    '#party', '#dance', '#fire', '#hot', '#cool', '#sunglasses', '#eyes',
+                    '#shrug', '#idk', '#check', '#yes', '#cross', '#no', '#question',
+                    '#exclamation', '#star', '#sparkles', '#kappa', '#pogchamp', '#lul',
+                    '#monkas', '#omegalul', '#pepega', '#pepe', '#sadge', '#pog', '#copium'
+                ]
+            
+            for emote in emote_list:
+                if emote.lower().startswith(partial_lower):
+                    matches.append(emote)
+        else:
+            # Username completion
+            if not self.channel or not self.channel.userlist:
+                return []
+            
+            for username in self.channel.userlist.keys():
+                if username.lower().startswith(partial_lower):
+                    matches.append(username)
         
         # Sort matches alphabetically (case-insensitive)
-        matches.sort(key=str.lower)
-        return matches
-
-    def _get_emote_matches(self, partial):
-        """Get list of emotes matching the partial string.
-
-        Args:
-            partial (str): Partial emote name to match (without # prefix)
-
-        Returns:
-            list: List of matching emotes (with # prefix, no suffix)
-        """
-        # Use emotes from channel if available, otherwise fallback to common emotes
-        if self.emotes:
-            emote_list = self.emotes
-        else:
-            # Fallback to common CyTube emotes if channel emotes not yet received
-            emote_list = [
-                'smile', 'sad', 'laugh', 'lol', 'angry', 'rage', 'heart', 'love',
-                'thumbsup', 'thumbsdown', 'thinking', 'think', 'wave', 'hello',
-                'party', 'dance', 'fire', 'hot', 'cool', 'sunglasses', 'eyes',
-                'shrug', 'idk', 'check', 'yes', 'cross', 'no', 'question',
-                'exclamation', 'star', 'sparkles', 'kappa', 'pogchamp', 'lul',
-                'monkas', 'omegalul', 'pepega', 'pepe', 'sadge', 'pog', 'copium'
-            ]
-        
-        # If partial is empty, match all emotes (e.g., user typed just "#" and hit tab)
-        if not partial:
-            matches = sorted(emote_list, key=str.lower)
-            return matches
-        
-        partial_lower = partial.lower()
-        matches = []
-        
-        for emote in emote_list:
-            if emote.lower().startswith(partial_lower):
-                # Return emote name only (no # prefix)
-                # The # is already in the buffer at last_hash position
-                matches.append(emote)
-        
-        # Sort matches alphabetically
-        matches.sort(key=str.lower)
-        return matches
+        return sorted(matches, key=str.lower)
 
     def navigate_history_up(self):
         """Navigate backward in command history (up arrow)."""
