@@ -82,10 +82,13 @@ if [ ! -f "configs/config.yaml" ]; then
                 -e "s/\"your-password\"/\"$ESCAPED_PASSWORD\"/" \
                 "configs/config.yaml"
         else
-            # Update channel and set user to null
+            # Update channel and comment out user section for guest access
+            # More robust than range-based sed which can fail with spacing changes
             sed -i.bak \
                 -e "s/\"your-channel-name\"/\"$ESCAPED_CHANNEL\"/" \
-                -e '/user:/,/  - \"your-password\"/c\user: null' \
+                -e "s/^user:/# user:/" \
+                -e "s/^  - \"your-username\"/  # - \"your-username\"/" \
+                -e "s/^  - \"your-password\"/  # - \"your-password\"/" \
                 "configs/config.yaml"
         fi
 
