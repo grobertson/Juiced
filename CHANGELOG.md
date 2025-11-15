@@ -5,17 +5,19 @@ All notable changes to Juiced will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.6] - 2025-11-14
+## [v0.2.6] - 2024-11-14
 
 ### Fixed
-- **Critical:** Fixed asyncio event loop error causing startup crashes ("attached to a different loop")
-- Message wrapping now works correctly for all messages (no more truncation)
-- Tab completion works with usernames containing underscores
-- Emote tab completion now uses actual channel emotes from CyTube
-- Fixed startup crash with get_config() argument error
-- AFK users now display with dim + italic formatting for better visibility
-- User list now sorts by rank hierarchy (Owner > Admin > Mod > User)
-- Mods always display at top of user list even when AFK
+
+- **Critical:** Fixed RuntimeError preventing TUI startup when using asyncio event loops. Bot now uses `asyncio.get_running_loop()` dynamically instead of storing event loop reference during initialization.
+- Fixed setup script to properly check for Python 3.7+ instead of 3.8+
+- Improved error messages when config.yaml is missing
+- Fixed emote tab completion: simplified logic by storing emotes with `#` prefix, eliminating duplicate `#` characters and complex conditional logic
+
+### Changed
+
+- Refactored message wrapping logic into `_calculate_message_wrapped_lines()` helper method for consistency
+- Unified tab completion matching into single `_get_completion_matches()` method (replaces `_get_username_matches()` and `_get_emote_matches()`)
 
 ### Added
 - Interactive setup scripts (setup.bat / setup.sh) for easy installation
