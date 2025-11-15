@@ -64,16 +64,29 @@ if [ ! -f "configs/config.yaml" ]; then
         echo ""
         echo "Updating config file..."
 
-        # Update channel name (preserve quotes)
-        sed -i.bak "s/\"your-channel-name\"/\"$CYTUBE_CHANNEL\"/" "configs/config.yaml"
+        # Escape special characters for sed (/, &, \, newlines)
+        escape_sed() {
+            printf '%s\n' "$1" | sed -e 's/[\/&]/\\&/g'
+        }
 
-        # Update credentials (preserve quotes)
+        ESCAPED_CHANNEL=$(escape_sed "$CYTUBE_CHANNEL")
+        
         if [ "$CYTUBE_USERNAME" != "null" ]; then
-            sed -i.bak "s/\"your-username\"/\"$CYTUBE_USERNAME\"/" "configs/config.yaml"
-            sed -i.bak "s/\"your-password\"/\"$CYTUBE_PASSWORD\"/" "configs/config.yaml"
+            ESCAPED_USERNAME=$(escape_sed "$CYTUBE_USERNAME")
+            ESCAPED_PASSWORD=$(escape_sed "$CYTUBE_PASSWORD")
+            
+            # Combine all sed operations into one atomic command
+            sed -i.bak \
+                -e "s/\"your-channel-name\"/\"$ESCAPED_CHANNEL\"/" \
+                -e "s/\"your-username\"/\"$ESCAPED_USERNAME\"/" \
+                -e "s/\"your-password\"/\"$ESCAPED_PASSWORD\"/" \
+                "configs/config.yaml"
         else
-            # Replace user array with null for guest access
-            sed -i.bak '/user:/,/  - \"your-password\"/c\user: null' "configs/config.yaml"
+            # Update channel and set user to null
+            sed -i.bak \
+                -e "s/\"your-channel-name\"/\"$ESCAPED_CHANNEL\"/" \
+                -e '/user:/,/  - \"your-password\"/c\user: null' \
+                "configs/config.yaml"
         fi
 
         # Remove backup file
