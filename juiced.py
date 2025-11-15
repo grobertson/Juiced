@@ -17,6 +17,13 @@ if venv_python.exists():
     python_cmd = str(venv_python)
 else:
     print("Starting Juiced with system Python...")
+    print("")
+    print("WARNING: No virtual environment found.")
+    print("It's recommended to create one with:")
+    print("  python3 -m venv venv")
+    print("  venv/bin/pip install -r requirements.txt")
+    print("")
+    print("Attempting to run with system Python...")
     python_cmd = 'python3'
 
 # Run Juiced
