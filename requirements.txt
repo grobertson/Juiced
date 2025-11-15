@@ -6,6 +6,7 @@ blessed>=1.19.0
 # WebSocket and Socket.IO
 python-socketio[client]>=5.0.0
 websocket-client>=1.0.0
+websockets>=10.0
 
 # Configuration
 PyYAML>=6.0

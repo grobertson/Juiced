@@ -80,15 +80,18 @@ class TUIBot(Bot):
         5: '&',      # Founder
     }
 
-    def __init__(self, *args, tui_config=None, **kwargs):
+    def __init__(self, tui_config=None, config_file='config.yaml', **kwargs):
         """Initialize the TUI bot.
 
         Args:
-            *args: Positional arguments passed to Bot.__init__
             tui_config (dict): TUI-specific configuration options
-            **kwargs: Keyword arguments passed to Bot.__init__
+            config_file (str): Path to configuration file
+            **kwargs: Keyword arguments passed to Bot.__init__ (domain, channel, user, etc.)
         """
-        super().__init__(*args, **kwargs)
+        # Extract log_path from kwargs before passing to parent
+        self.log_path = kwargs.pop('log_path', 'logs')
+        
+        super().__init__(**kwargs)
 
         # Initialize terminal
         self.term = Terminal()
@@ -100,7 +103,7 @@ class TUIBot(Bot):
         self.hide_afk_users = self.tui_config.get('hide_afk_users', False)  # Hide AFK users from list
         
         # Store config file path for persistence
-        self.config_file = args[0] if args else 'config.json'
+        self.config_file = config_file
         
         # Load theme
         theme_name = self.tui_config.get('theme', 'default')
@@ -124,6 +127,9 @@ class TUIBot(Bot):
         self.tab_completion_matches = []
         self.tab_completion_index = 0
         self.tab_completion_start = 0
+
+        # Emote list from channel
+        self.emotes = []  # List of emote names (WITH # prefix for tab completion)
 
         # Scrolling
         self.scroll_offset = 0
@@ -163,6 +169,7 @@ class TUIBot(Bot):
         self.on('queue', self.handle_queue)
         self.on('playlist', self.handle_playlist)
         self.on('login', self.handle_login)
+        self.on('emoteList', self.handle_emote_list)  # CyTube emote list
 
     def _on_queue(self, _, data):
         """Override base Bot's queue handler to add retry logic.
@@ -431,12 +438,40 @@ class TUIBot(Bot):
         return False
 
     def _setup_logging(self):
-        """Setup file logging for errors and chat history."""
-        # Create logs directory if it doesn't exist
-        log_dir = Path(__file__).parent / 'logs'
-        log_dir.mkdir(exist_ok=True)
+        """Setup file logging for errors and chat history.
+        
+        CRITICAL: Disables console output to prevent corrupting TUI display.
+        All logs go to files only.
+        """
+        # DISABLE all console output - this is a TUI, stdout corrupts the display!
+        # Remove any existing handlers from root logger and this logger
+        root_logger = logging.getLogger()
+        root_logger.handlers.clear()
+        self.logger.handlers.clear()
+        
+        # Prevent propagation to root logger (which might have console handlers)
+        self.logger.propagate = False
+        
+        # Determine log directory from config
+        if Path(self.log_path).is_absolute():
+            log_dir = Path(self.log_path)
+        else:
+            # Relative to project root (parent of juiced package)
+            project_root = Path(__file__).parent.parent
+            log_dir = project_root / self.log_path
+        
+        log_dir.mkdir(parents=True, exist_ok=True)
 
-        # Error log file
+        # Debug log file (all levels)
+        debug_log = log_dir / 'tui_debug.log'
+        debug_handler = logging.FileHandler(debug_log, encoding='utf-8')
+        debug_handler.setLevel(logging.DEBUG)
+        debug_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        ))
+        self.logger.addHandler(debug_handler)
+        
+        # Error log file (warnings and above)
         error_log = log_dir / 'tui_errors.log'
         error_handler = logging.FileHandler(error_log, encoding='utf-8')
         error_handler.setLevel(logging.WARNING)
@@ -448,8 +483,11 @@ class TUIBot(Bot):
         # Chat history log file
         chat_log = log_dir / f'chat_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
         self.chat_log_file = open(chat_log, 'a', encoding='utf-8')
-        self.logger.info(f'Chat logging to: {chat_log}')
+        
+        # Log where files are being written (these go to files, not console)
+        self.logger.info(f'Debug logging to: {debug_log}')
         self.logger.info(f'Error logging to: {error_log}')
+        self.logger.info(f'Chat logging to: {chat_log}')
 
     @staticmethod
     def format_duration(seconds):
@@ -684,6 +722,7 @@ class TUIBot(Bot):
                     self.render_top_status()
                     self.pending_media_uid = None
             except (ValueError, AttributeError):
+                # Media item not in queue yet - will retry when playlist is received
                 pass
 
     async def handle_playlist(self, _, data):
@@ -702,6 +741,7 @@ class TUIBot(Bot):
                     self.render_top_status()
                     self.pending_media_uid = None
             except (ValueError, AttributeError):
+                # Media item still not in playlist - will be handled by next update
                 pass
 
     async def handle_login(self, _, data):
@@ -713,6 +753,41 @@ class TUIBot(Bot):
         """
         self.status_message = f'Connected to {self.channel.name}'
         self.render_status()
+
+    async def handle_emote_list(self, _, data):
+        """Handle emote list from CyTube.
+
+        Args:
+            _ (str): Event name (unused)
+            data (list): List of emote objects from CyTube
+        
+        CyTube sends emotes as a list of objects with 'name', 'image', etc.
+        We extract just the names for tab completion.
+        """
+        if not data:
+            return
+        
+        # Extract emote names from the emote objects
+        # CyTube emotes are objects like: {'name': '#smile', 'image': '...', ...}
+        # Note: CyTube emote names already include the # prefix
+        self.emotes = []
+        for emote in data:
+            if isinstance(emote, dict) and 'name' in emote:
+                name = emote['name']
+                # Ensure name has # prefix (some might not)
+                if not name.startswith('#'):
+                    name = '#' + name
+                self.emotes.append(name)
+            elif isinstance(emote, str):
+                # Sometimes they might just be strings
+                if not emote.startswith('#'):
+                    emote = '#' + emote
+                self.emotes.append(emote)
+        
+        self.logger.debug(f'Received {len(self.emotes)} emotes from server. Sample: {self.emotes[:5] if self.emotes else []}')
+        
+        # Sort for consistent tab completion
+        self.emotes.sort(key=str.lower)
 
     def render_screen(self):
         """Render the complete TUI layout.
@@ -833,6 +908,7 @@ class TUIBot(Bot):
                     if high_water:
                         left_parts.append(f"📊 Peak: {high_water}")
                 except Exception:
+                    # Database query failed - continue without high water mark
                     pass
             
             # Media runtime and remaining - use cached values from changeMedia
@@ -912,6 +988,36 @@ class TUIBot(Bot):
         """Legacy method - redirect to top status bar."""
         self.render_top_status()
 
+    def _calculate_message_wrapped_lines(self, message, chat_width, timestamp, username, prefix):
+        """Calculate wrapped lines for a message.
+        
+        Args:
+            message (str): The message text to wrap
+            chat_width (int): Available width for chat area
+            timestamp (str): Message timestamp
+            username (str): Username of sender
+            prefix (str): Message prefix (e.g., '[PM]')
+            
+        Returns:
+            list: List of wrapped lines, or single-item list with original message if wrapping not possible
+        """
+        # Calculate prefix length
+        prefix_len = len(f'[{timestamp}] ')
+        if prefix:
+            prefix_len += len(f'{prefix} ')
+        prefix_len += len(f'<{username}> ')
+        
+        # Calculate available width for message
+        max_msg_width = chat_width - prefix_len
+        
+        if max_msg_width > 0:
+            wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
+                                         break_long_words=True, 
+                                         break_on_hyphens=True)
+            return wrapped_lines if wrapped_lines else ['']
+        else:
+            return [message]
+
     def render_chat(self):
         """Render the chat history area with scrolling support."""
         # Calculate dimensions - now we have 4 lines used (top status, separator, bottom status, input)
@@ -919,12 +1025,30 @@ class TUIBot(Bot):
         user_list_width = 22
         chat_width = self.term.width - user_list_width - 1
 
-        # Get visible messages based on scroll offset
-        total_messages = len(self.chat_history)
-        start_idx = max(0, total_messages - chat_height - self.scroll_offset)
-        end_idx = total_messages - self.scroll_offset
-        visible_messages = list(self.chat_history)[start_idx:end_idx]
-
+        # Calculate which messages fit on screen, accounting for wrapping
+        visible_messages = []
+        lines_used = 0
+        
+        # Start from the end and work backwards, counting lines as we go
+        for msg_data in reversed(self.chat_history):
+            timestamp = msg_data['timestamp']
+            username = msg_data['username']
+            message = msg_data['message']
+            prefix = msg_data['prefix']
+            
+            # Calculate how many lines this message will take using helper method
+            wrapped_lines = self._calculate_message_wrapped_lines(
+                message, chat_width, timestamp, username, prefix
+            )
+            lines_needed = len(wrapped_lines)
+            
+            # Check if this message fits
+            if lines_used + lines_needed <= chat_height:
+                visible_messages.insert(0, msg_data)
+                lines_used += lines_needed
+            else:
+                break
+        
         # Render separator line
         border_color = self.theme['colors']['borders']
         border_func = getattr(self.term, border_color, self.term.bright_black)
@@ -932,74 +1056,65 @@ class TUIBot(Bot):
             print(border_func('─' * (chat_width)), end='', flush=True)
 
         # Render chat messages
-        for i, msg_data in enumerate(visible_messages):
-            line_num = 2 + i
+        current_line = 2
+        for msg_data in visible_messages:
+            timestamp = msg_data['timestamp']
+            username = msg_data['username']
+            message = msg_data['message']
+            prefix = msg_data['prefix']
+            color = msg_data['color']
 
-            with self.term.location(0, line_num):
-                # Clear the line
+            # Format: [HH:MM:SS] <username> message
+            # or:      [HH:MM:SS] [PM] <username> message
+            time_str = self.term.bright_black(f'[{timestamp}]')
+
+            # Get the color function from terminal
+            color_func = getattr(self.term, color, self.term.white)
+
+            if prefix:
+                username_str = f'{prefix} {color_func(f"<{username}>")} '
+            else:
+                username_str = f'{color_func(f"<{username}>")} '
+
+            # Wrap message using helper method
+            wrapped_lines = self._calculate_message_wrapped_lines(
+                message, chat_width, timestamp, username, prefix
+            )
+            
+            # Calculate prefix length for continuation line indentation
+            prefix_len = len(f'[{timestamp}] ')
+            if prefix:
+                prefix_len += len(f'{prefix} ')
+            prefix_len += len(f'<{username}> ')
+            
+            # Check if my username is mentioned in the message
+            if self.user and self.user.name and self.user.name in message:
+                # Highlight the entire message with reverse video
+                wrapped_lines = [self.term.reverse(line) for line in wrapped_lines]
+            
+            # Print first line with full prefix
+            with self.term.location(0, current_line):
                 print(' ' * chat_width, end='')
-
-            with self.term.location(0, line_num):
-                timestamp = msg_data['timestamp']
-                username = msg_data['username']
-                message = msg_data['message']
-                prefix = msg_data['prefix']
-                color = msg_data['color']
-
-                # Format: [HH:MM:SS] <username> message
-                # or:      [HH:MM:SS] [PM] <username> message
-                time_str = self.term.bright_black(f'[{timestamp}]')
-
-                # Get the color function from terminal
-                color_func = getattr(self.term, color, self.term.white)
-
-                if prefix:
-                    username_str = f'{prefix} {color_func(f"<{username}>")} '
-                else:
-                    username_str = f'{color_func(f"<{username}>")} '
-
-                # Calculate max message width
-                prefix_len = len(f'[{timestamp}] ')
-                if prefix:
-                    prefix_len += len(f'{prefix} ')
-                prefix_len += len(f'<{username}> ')
-
-                max_msg_width = chat_width - prefix_len
-                
-                # Wrap message if needed (with 2 column padding after wrap)
-                wrapped_lines = textwrap.wrap(message, width=max_msg_width, 
-                                             break_long_words=True, 
-                                             break_on_hyphens=True)
-                
-                # Check if my username is mentioned in the message
-                if self.user and self.user.name and self.user.name in message:
-                    # Highlight the entire message with reverse video
-                    wrapped_lines = [self.term.reverse(line) for line in wrapped_lines]
-                
-                # Print first line with full prefix
-                if wrapped_lines:
-                    print(f'{time_str} {username_str}{wrapped_lines[0]}', end='', flush=True)
-                    
-                    # Print continuation lines with padding (2 spaces after wrap point)
-                    for wrap_line_idx, continuation in enumerate(wrapped_lines[1:], 1):
-                        continuation_line_num = line_num + wrap_line_idx
-                        # Stop if we've run out of screen space
-                        if continuation_line_num >= chat_height + 2:
-                            break
-                        with self.term.location(0, continuation_line_num):
-                            print(' ' * chat_width, end='')
-                        with self.term.location(0, continuation_line_num):
-                            indent = ' ' * (prefix_len + 2)  # 2 column padding
-                            print(f'{indent}{continuation}', end='', flush=True)
-                else:
-                    # Empty message
-                    print(f'{time_str} {username_str}', end='', flush=True)
+            with self.term.location(0, current_line):
+                print(f'{time_str} {username_str}{wrapped_lines[0]}', end='', flush=True)
+            current_line += 1
+            
+            # Print continuation lines with padding (2 spaces after wrap point)
+            for continuation in wrapped_lines[1:]:
+                if current_line >= chat_height + 2:
+                    break
+                with self.term.location(0, current_line):
+                    print(' ' * chat_width, end='')
+                with self.term.location(0, current_line):
+                    indent = ' ' * (prefix_len + 2)  # 2 column padding
+                    print(f'{indent}{continuation}', end='', flush=True)
+                current_line += 1
 
         # Clear any remaining lines
-        for i in range(len(visible_messages), chat_height):
-            line_num = 2 + i
-            with self.term.location(0, line_num):
+        while current_line < chat_height + 2:
+            with self.term.location(0, current_line):
                 print(' ' * chat_width, end='', flush=True)
+            current_line += 1
 
     def render_users(self):
         """Render the user list on the right side of the screen.
@@ -1038,25 +1153,28 @@ class TUIBot(Bot):
             with self.term.location(user_list_x - 1, i):
                 print(border_func('│'), end='', flush=True)
 
-        # Separate users into three groups: mods (rank >= 2), regular users, and AFK
-        mods = []
-        regular_users = []
-        afk_users = []
+        # Separate users by rank: higher ranks at top, then by activity status
+        # Rank hierarchy: Owner (4+) > Admin (3) > Mod (2) > Registered (1) > Guest (0)
+        mods = []           # All users with rank >= 2, AFK or not
+        regular_users = []  # Active regular users
+        afk_users = []      # AFK regular users (rank < 2)
         
         for user in self.channel.userlist.values():
-            if user.afk:
-                afk_users.append(user)
-            elif user.rank >= 2:  # Moderator or higher
+            if user.rank >= 2:  # Moderator or higher - always at top
                 mods.append(user)
-            else:
+            elif user.afk:  # AFK regular users go to bottom
+                afk_users.append(user)
+            else:  # Active regular users in middle
                 regular_users.append(user)
         
-        # Sort each group alphabetically by name (case-insensitive)
-        mods.sort(key=lambda u: u.name.lower())
+        # Sort mods by rank (descending), then alphabetically within same rank
+        mods.sort(key=lambda u: (-u.rank, u.name.lower()))
+        
+        # Sort other groups alphabetically by name (case-insensitive)
         regular_users.sort(key=lambda u: u.name.lower())
         afk_users.sort(key=lambda u: u.name.lower())
         
-        # Combine lists: mods first, then regular users, then AFK (if not hidden)
+        # Combine lists: mods first (by rank, then alpha), then active users, then AFK regular users
         sorted_users = mods + regular_users
         if not self.hide_afk_users:
             sorted_users += afk_users
@@ -1111,16 +1229,21 @@ class TUIBot(Bot):
                 if len(user_str) > max_width:
                     user_str = user_str[:max_width - 1] + '…'
 
-                # Apply formatting for AFK users (italic instead of dim)
+                # Apply color first
+                colored_str = color_func(user_str)
+
+                # Apply formatting for AFK users (dim + italic)
                 if user.afk:
                     try:
-                        user_str = self.term.italic(user_str)
+                        # Apply both dim and italic for AFK users
+                        colored_str = self.term.dim(self.term.italic(colored_str))
                     except (TypeError, AttributeError):
-                        # Fallback if italic not supported
-                        pass
-
-                # Apply color
-                colored_str = color_func(user_str)
+                        # Fallback if dim not supported - try italic only
+                        try:
+                            colored_str = self.term.italic(colored_str)
+                        except (TypeError, AttributeError):
+                            # Terminal doesn't support italic/dim formatting - use as-is
+                            pass
                 
                 print(f' {colored_str}', end='', flush=True)
 
@@ -1226,14 +1349,17 @@ class TUIBot(Bot):
     def handle_tab_completion(self):
         """Handle tab completion for usernames and emotes.
 
-        CyTube-specific tab completion:
+        Unified tab completion:
         - Emotes: Start with '#' (e.g., #smi<TAB> -> #smile)
-        - Usernames: After 2+ alphanumeric characters anywhere in text (e.g., ali<TAB> -> alice)
+        - Usernames: 2+ alphanumeric characters (e.g., ali<TAB> -> alice)
         
+        Since usernames never start with '#', there's no conflict.
         Pressing Tab multiple times cycles through matches alphabetically.
         No matches = tab is ignored.
         """
         if not self.input_buffer:
+            # Reset completion state when buffer is empty
+            self.tab_completion_matches = []
             return
 
         # If we have existing matches, cycle through them
@@ -1241,117 +1367,103 @@ class TUIBot(Bot):
             self.tab_completion_index = (self.tab_completion_index + 1) % len(self.tab_completion_matches)
             match = self.tab_completion_matches[self.tab_completion_index]
             
+            self.logger.debug(f'Cycling: index={self.tab_completion_index}, match="{match}", start={self.tab_completion_start}, buffer_before="{self.input_buffer}"')
+            
             # Replace from the start position to the end
             self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
+            
+            self.logger.debug(f'Cycling: buffer_after="{self.input_buffer}"')
             self.render_input()
             return
 
         cursor_pos = len(self.input_buffer)
         
-        # Check for emote completion (starts with #)
-        # Find the last # in the buffer
-        last_hash = self.input_buffer.rfind('#')
-        if last_hash >= 0 and last_hash < cursor_pos:
-            # Make sure there's no whitespace between # and cursor
-            text_after_hash = self.input_buffer[last_hash + 1:cursor_pos]
-            if ' ' not in text_after_hash:
-                # Extract partial emote name after #
-                partial = text_after_hash
-                matches = self._get_emote_matches(partial)
-                
-                if matches:
-                    # Store state for cycling
-                    self.tab_completion_matches = matches
-                    self.tab_completion_index = 0
-                    self.tab_completion_start = last_hash
-                    
-                    # Apply first match (includes the # prefix)
-                    self.input_buffer = self.input_buffer[:last_hash] + matches[0]
-                    self.render_input()
-                return
-        
-        # Check for username completion (2+ alphanumeric chars)
         # Find the start of the current word (working backwards from cursor)
         start_pos = cursor_pos - 1
-        while start_pos >= 0 and self.input_buffer[start_pos].isalnum():
+        while start_pos >= 0 and (self.input_buffer[start_pos].isalnum() or self.input_buffer[start_pos] in ['#', '_']):
             start_pos -= 1
         start_pos += 1  # Move to first char of the word
         
-        # Extract the partial username
+        # Extract the partial word
         partial = self.input_buffer[start_pos:cursor_pos]
         
-        # Only attempt username completion if we have 2+ characters
-        if len(partial) >= 2:
-            matches = self._get_username_matches(partial)
-            
-            if matches:
-                # Store state for cycling
-                self.tab_completion_matches = matches
-                self.tab_completion_index = 0
-                self.tab_completion_start = start_pos
-                
-                # Apply first match (no prefix or suffix)
-                self.input_buffer = self.input_buffer[:start_pos] + matches[0]
-                self.render_input()
-
-    def _get_username_matches(self, partial):
-        """Get list of usernames matching the partial string.
-
-        Args:
-            partial (str): Partial username to match (minimum 2 characters)
-
-        Returns:
-            list: List of matching usernames, sorted alphabetically
-        """
-        if not self.channel or not self.channel.userlist:
-            return []
+        self.logger.debug(f'Tab completion: partial="{partial}", start_pos={start_pos}, cursor_pos={cursor_pos}, buffer="{self.input_buffer}"')
         
+        # Determine what we're completing based on content
+        matches = []
+        if partial.startswith('#'):
+            # Emote completion - matches already include # prefix
+            if len(partial) >= 1:
+                matches = self._get_completion_matches(partial, is_emote=True)
+                self.logger.debug(f'Emote completion: found {len(matches)} matches, emote_list_size={len(self.emotes)}')
+                if matches:
+                    self.logger.debug(f'First match: "{matches[0]}"')
+        elif len(partial) >= 2:
+            # Username completion - need at least 2 characters
+            matches = self._get_completion_matches(partial, is_emote=False)
+            self.logger.debug(f'Username completion: found {len(matches)} matches')
+        else:
+            # Not enough characters to complete
+            self.logger.debug(f'Not enough characters to complete: partial="{partial}", len={len(partial)}')
+            return
+        
+        if matches:
+            # Store state for cycling
+            self.tab_completion_matches = matches
+            self.tab_completion_index = 0
+            self.tab_completion_start = start_pos
+            
+            # Apply first match - it already has the complete text including # for emotes
+            self.input_buffer = self.input_buffer[:start_pos] + matches[0]
+            self.logger.debug(f'Applied match: buffer is now "{self.input_buffer}"')
+            self.render_input()
+
+    def _get_completion_matches(self, partial, is_emote):
+        """Get matching completions for the given partial text.
+        
+        Unified tab completion matching for both usernames and emotes.
+        Since emotes are stored with # prefix, matching is straightforward.
+        
+        Args:
+            partial: The text to complete (may include # prefix for emotes)
+            is_emote: True to search emotes, False to search usernames
+        
+        Returns:
+            List of matching strings (emotes include # prefix, usernames don't)
+        """
         partial_lower = partial.lower()
         matches = []
         
-        for username in self.channel.userlist.keys():
-            # Skip usernames with underscores (CyTube bug workaround)
-            if '_' in username:
-                continue
-                
-            if username.lower().startswith(partial_lower):
-                matches.append(username)
+        if is_emote:
+            # Emotes stored with # prefix (e.g., ['#smile', '#lol', '#kappa'])
+            if self.emotes:
+                emote_list = self.emotes
+            else:
+                # Fallback to common CyTube emotes if channel emotes not yet received
+                # Add # prefix to fallback list too
+                emote_list = [
+                    '#smile', '#sad', '#laugh', '#lol', '#angry', '#rage', '#heart', '#love',
+                    '#thumbsup', '#thumbsdown', '#thinking', '#think', '#wave', '#hello',
+                    '#party', '#dance', '#fire', '#hot', '#cool', '#sunglasses', '#eyes',
+                    '#shrug', '#idk', '#check', '#yes', '#cross', '#no', '#question',
+                    '#exclamation', '#star', '#sparkles', '#kappa', '#pogchamp', '#lul',
+                    '#monkas', '#omegalul', '#pepega', '#pepe', '#sadge', '#pog', '#copium'
+                ]
+            
+            for emote in emote_list:
+                if emote.lower().startswith(partial_lower):
+                    matches.append(emote)
+        else:
+            # Username completion
+            if not self.channel or not self.channel.userlist:
+                return []
+            
+            for username in self.channel.userlist.keys():
+                if username.lower().startswith(partial_lower):
+                    matches.append(username)
         
         # Sort matches alphabetically (case-insensitive)
-        matches.sort(key=str.lower)
-        return matches
-
-    def _get_emote_matches(self, partial):
-        """Get list of emotes matching the partial string.
-
-        Args:
-            partial (str): Partial emote name to match (without # prefix)
-
-        Returns:
-            list: List of matching emotes (with # prefix, no suffix)
-        """
-        # Common CyTube emotes - in a real implementation, this would come from channel config
-        # These are typical emotes found on CyTube channels
-        common_emotes = [
-            'smile', 'sad', 'laugh', 'lol', 'angry', 'rage', 'heart', 'love',
-            'thumbsup', 'thumbsdown', 'thinking', 'think', 'wave', 'hello',
-            'party', 'dance', 'fire', 'hot', 'cool', 'sunglasses', 'eyes',
-            'shrug', 'idk', 'check', 'yes', 'cross', 'no', 'question',
-            'exclamation', 'star', 'sparkles', 'kappa', 'pogchamp', 'lul',
-            'monkas', 'omegalul', 'pepega', 'pepe', 'sadge', 'pog', 'copium'
-        ]
-        
-        partial_lower = partial.lower()
-        matches = []
-        
-        for emote in common_emotes:
-            if emote.startswith(partial_lower):
-                # Return with # prefix, no suffix
-                matches.append('#' + emote)
-        
-        # Sort matches alphabetically
-        matches.sort(key=str.lower)
-        return matches
+        return sorted(matches, key=str.lower)
 
     def navigate_history_up(self):
         """Navigate backward in command history (up arrow)."""
@@ -1976,6 +2088,7 @@ class TUIBot(Bot):
                 try:
                     await task
                 except asyncio.CancelledError:
+                    # Task cancellation is expected - suppress the exception
                     pass
 
         except Exception as e:

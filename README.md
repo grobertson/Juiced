@@ -2,7 +2,7 @@
 
 **A retro-futuristic terminal chat client for CyTube**  Inspired by classic IRC clients like BitchX, built for the modern web
 
-[![Beta Release](https://img.shields.io/badge/version-0.2.0--beta-orange.svg)](https://github.com/grobertson/Juiced/releases)
+[![Beta Release](https://img.shields.io/badge/version-0.2.6--beta-orange.svg)](https://github.com/grobertson/Juiced/releases)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 

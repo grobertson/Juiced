@@ -1,6 +1,6 @@
 # Juiced - Quick Start Guide for Beta Testers
 
-Welcome to **Juiced v0.2.0 Beta**! 🎉
+Welcome to **Juiced v0.2.6 Beta**! 🎉
 
 This is the first standalone release of Juiced, a terminal user interface for CyTube chat rooms.
 

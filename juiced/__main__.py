@@ -27,9 +27,9 @@ def main():
     
     config_file = sys.argv[1]
     
-    # Load configuration
+    # Load configuration (get_config reads from sys.argv directly)
     try:
-        config = get_config(config_file)
+        config, kwargs = get_config()
     except Exception as e:
         print(f"Error loading config: {e}")
         print("")
@@ -41,7 +41,7 @@ def main():
     tui_config = config.pop('tui', {})
     
     # Create and run bot
-    bot = TUIBot(config_file, tui_config=tui_config, **config)
+    bot = TUIBot(tui_config=tui_config, config_file=config_file, **kwargs)
     
     try:
         asyncio.run(bot.run_tui())

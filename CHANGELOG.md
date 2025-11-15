@@ -5,6 +5,40 @@ All notable changes to Juiced will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.2.6] - 2024-11-14
+
+### Fixed
+
+- **Critical:** Fixed RuntimeError preventing TUI startup when using asyncio event loops. Bot now uses `asyncio.get_running_loop()` dynamically instead of storing event loop reference during initialization.
+- Fixed setup script to properly check for Python 3.7+ instead of 3.8+
+- Improved error messages when config.yaml is missing
+- Fixed emote tab completion: emote names from CyTube already include `#` prefix, no longer double-prepending
+- Fixed logging output corrupting TUI display: all logs now go to files only, never stdout
+
+### Added
+
+- Configurable `log_path` in config.yaml for custom log file location
+- Separate debug log file (`tui_debug.log`) for detailed troubleshooting
+- Enhanced tab completion debug logging
+
+### Changed
+
+- Refactored message wrapping logic into `_calculate_message_wrapped_lines()` helper method for consistency
+- Unified tab completion matching into single `_get_completion_matches()` method (replaces `_get_username_matches()` and `_get_emote_matches()`)
+- Logs now write to project root `logs/` directory by default instead of `juiced/logs/`
+
+### Added
+- Interactive setup scripts (setup.bat / setup.sh) for easy installation
+- Automated config file setup with prompts for credentials
+- Virtual environment detection and warnings in launchers
+- Comprehensive INSTALL.md guide for new users
+- emoteList event handler for receiving channel-specific emotes
+
+### Changed
+- User list sorting now prioritizes by rank, then alphabetically
+- Setup scripts now prompt for channel, username, and password
+- Improved launcher scripts with helpful warnings
+
 ## [0.2.0] - 2025-11-14
 
 ### Added
