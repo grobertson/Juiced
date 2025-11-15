@@ -1311,6 +1311,8 @@ class TUIBot(Bot):
         No matches = tab is ignored.
         """
         if not self.input_buffer:
+            # Reset completion state when buffer is empty
+            self.tab_completion_matches = []
             return
 
         # If we have existing matches, cycle through them
@@ -1347,7 +1349,7 @@ class TUIBot(Bot):
                 matches = self._get_emote_matches(partial)
                 
                 # Log for debugging
-                self.logger.debug(f'Emote completion: partial="{partial}", matches={len(matches)} found, last_hash={last_hash}')
+                self.logger.debug(f'Emote completion: partial="{partial}", matches={len(matches)} found, last_hash={last_hash}, input_buffer="{self.input_buffer}"')
                 
                 if matches:
                     # Store state for cycling
@@ -1365,6 +1367,9 @@ class TUIBot(Bot):
                     # Debug logging
                     self.logger.debug(f'First match: buffer_after="{self.input_buffer}"')
                     self.render_input()
+                else:
+                    # No matches found - log it
+                    self.logger.debug(f'Emote completion: NO MATCHES for partial="{partial}"')
                 return
         
         # Check for username completion (2+ alphanumeric chars)
