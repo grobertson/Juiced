@@ -1167,16 +1167,20 @@ class TUIBot(Bot):
                 if len(user_str) > max_width:
                     user_str = user_str[:max_width - 1] + '…'
 
-                # Apply formatting for AFK users (italic instead of dim)
+                # Apply color first
+                colored_str = color_func(user_str)
+
+                # Apply formatting for AFK users (dim + italic)
                 if user.afk:
                     try:
-                        user_str = self.term.italic(user_str)
+                        # Apply both dim and italic for AFK users
+                        colored_str = self.term.dim(self.term.italic(colored_str))
                     except (TypeError, AttributeError):
-                        # Fallback if italic not supported
-                        pass
-
-                # Apply color
-                colored_str = color_func(user_str)
+                        # Fallback if dim/italic not supported
+                        try:
+                            colored_str = self.term.italic(colored_str)
+                        except (TypeError, AttributeError):
+                            pass
                 
                 print(f' {colored_str}', end='', flush=True)
 
