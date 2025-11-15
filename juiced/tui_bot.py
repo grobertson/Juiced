@@ -124,6 +124,7 @@ class TUIBot(Bot):
         self.tab_completion_matches = []
         self.tab_completion_index = 0
         self.tab_completion_start = 0
+        self.tab_completion_is_emote = False  # Track if completing emote (needs # prefix)
 
         # Emote list from channel
         self.emotes = []  # List of emote names (without # prefix)
@@ -1312,7 +1313,11 @@ class TUIBot(Bot):
             match = self.tab_completion_matches[self.tab_completion_index]
             
             # Replace from the start position to the end
-            self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
+            # Add # prefix if completing an emote
+            if self.tab_completion_is_emote:
+                self.input_buffer = self.input_buffer[:self.tab_completion_start] + '#' + match
+            else:
+                self.input_buffer = self.input_buffer[:self.tab_completion_start] + match
             self.render_input()
             return
 
@@ -1334,9 +1339,10 @@ class TUIBot(Bot):
                     self.tab_completion_matches = matches
                     self.tab_completion_index = 0
                     self.tab_completion_start = last_hash
+                    self.tab_completion_is_emote = True  # Flag that this is emote completion
                     
-                    # Apply first match (includes the # prefix)
-                    self.input_buffer = self.input_buffer[:last_hash] + matches[0]
+                    # Apply first match (prepend # since matches don't include it)
+                    self.input_buffer = self.input_buffer[:last_hash] + '#' + matches[0]
                     self.render_input()
                 return
         
@@ -1359,6 +1365,7 @@ class TUIBot(Bot):
                 self.tab_completion_matches = matches
                 self.tab_completion_index = 0
                 self.tab_completion_start = start_pos
+                self.tab_completion_is_emote = False  # Flag that this is username completion
                 
                 # Apply first match (no prefix or suffix)
                 self.input_buffer = self.input_buffer[:start_pos] + matches[0]
@@ -1415,8 +1422,9 @@ class TUIBot(Bot):
         
         for emote in emote_list:
             if emote.lower().startswith(partial_lower):
-                # Return with # prefix, no suffix
-                matches.append('#' + emote)
+                # Return emote name only (no # prefix)
+                # The # is already in the buffer at last_hash position
+                matches.append(emote)
         
         # Sort matches alphabetically
         matches.sort(key=str.lower)
