@@ -1340,6 +1340,9 @@ class TUIBot(Bot):
                 partial = text_after_hash
                 matches = self._get_emote_matches(partial)
                 
+                # Log for debugging
+                self.logger.debug(f'Emote completion: partial="{partial}", matches={len(matches)} found')
+                
                 if matches:
                     # Store state for cycling
                     self.tab_completion_matches = matches
@@ -1422,6 +1425,11 @@ class TUIBot(Bot):
                 'exclamation', 'star', 'sparkles', 'kappa', 'pogchamp', 'lul',
                 'monkas', 'omegalul', 'pepega', 'pepe', 'sadge', 'pog', 'copium'
             ]
+        
+        # If partial is empty, match all emotes (e.g., user typed just "#" and hit tab)
+        if not partial:
+            matches = sorted(emote_list, key=str.lower)
+            return matches
         
         partial_lower = partial.lower()
         matches = []
