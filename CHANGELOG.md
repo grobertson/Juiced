@@ -12,12 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Critical:** Fixed RuntimeError preventing TUI startup when using asyncio event loops. Bot now uses `asyncio.get_running_loop()` dynamically instead of storing event loop reference during initialization.
 - Fixed setup script to properly check for Python 3.7+ instead of 3.8+
 - Improved error messages when config.yaml is missing
-- Fixed emote tab completion: simplified logic by storing emotes with `#` prefix, eliminating duplicate `#` characters and complex conditional logic
+- Fixed emote tab completion: emote names from CyTube already include `#` prefix, no longer double-prepending
+- Fixed logging output corrupting TUI display: all logs now go to files only, never stdout
+
+### Added
+
+- Configurable `log_path` in config.yaml for custom log file location
+- Separate debug log file (`tui_debug.log`) for detailed troubleshooting
+- Enhanced tab completion debug logging
 
 ### Changed
 
 - Refactored message wrapping logic into `_calculate_message_wrapped_lines()` helper method for consistency
 - Unified tab completion matching into single `_get_completion_matches()` method (replaces `_get_username_matches()` and `_get_emote_matches()`)
+- Logs now write to project root `logs/` directory by default instead of `juiced/logs/`
 
 ### Added
 - Interactive setup scripts (setup.bat / setup.sh) for easy installation
