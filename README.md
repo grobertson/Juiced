@@ -117,6 +117,8 @@ Inspired by the golden age of IRC clients. RIP BitchX
 
 Built for the CyTube community
 
+KEEP CIRCULATING THE TAPES!!!
+
 ---
 
 **Ready to get Juiced?**  [BETA_TESTING.md](BETA_TESTING.md)
