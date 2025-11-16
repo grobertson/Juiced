@@ -1,0 +1,28 @@
+[2025-11-16 06:44:10] * <*> No media currently playing
+[2025-11-16 06:44:10] * <*> Channel: False
+[2025-11-16 06:44:10] * <*> Playlist: N/A
+[2025-11-16 06:44:10] * <*> Current: N/A
+[2025-11-16 06:44:10] * <*> Cached title: None
+[2025-11-16 06:44:10] * <*> ━━━ Current Media Info ━━━
+[2025-11-16 06:44:10] * <*> Title: Song
+[2025-11-16 06:44:10] * <*> Duration: 120s
+[2025-11-16 06:44:10] * <*> Current time: 10s
+[2025-11-16 06:44:10] * <*> Username: dj
+[2025-11-16 06:44:10] * <*> Object type: SimpleNamespace
+[2025-11-16 06:44:10] * <*> Cached title: None
+[2025-11-16 06:44:10] * <*> Moving to beginning not yet supported
+[2025-11-16 06:44:10] * <*> Usage: /move <from_pos> <to_pos>
+[2025-11-16 06:44:10] * <*> Usage: /jump <position>
+[2025-11-16 06:44:10] * <*> Invalid position number
+[2025-11-16 06:44:10] * <*> Position must be between 1 and 1
+[2025-11-16 06:44:10] * <*> Failed to add media: Raw files must begin with "https". Plain http is not supported.
+[2025-11-16 06:44:10] * <*> Usage: /remove <position>
+[2025-11-16 06:44:10] * <*> ━━━ Playlist Debug Info ━━━
+[2025-11-16 06:44:10] * <*> No playlist available
+[2025-11-16 06:44:10] * <*> ━━━ Playlist Debug Info ━━━
+[2025-11-16 06:44:10] * <*> Queue length: 2
+[2025-11-16 06:44:10] * <*> Pending UID: 2
+[2025-11-16 06:44:10] * <*> First 5 items in queue:
+[2025-11-16 06:44:10] * <*>   UID 1: First
+[2025-11-16 06:44:10] * <*>   UID 2: Second
+[2025-11-16 06:44:10] * <*> Found pending UID 2: Second

@@ -382,36 +382,41 @@ class TUIBot(Bot):
         if 'colors' not in new_theme:
             return False
         
-        # Apply the theme
-        self.theme = new_theme
-        self.current_theme_name = theme_name
-        
-        # Trigger full screen redraw to update all themed elements
-        self.render_screen()
-        
-        # Save to config file
+        # Save to config file first, so any error messages use the previous theme
         try:
             # Use absolute path if relative path was provided
             config_path = Path(self.config_file)
             if not config_path.is_absolute():
                 config_path = config_path.resolve()
-            
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            
+
+            # Ensure parent dir exists
+            config_path.parent.mkdir(parents=True, exist_ok=True)
+
+            config = {}
+            if config_path.exists():
+                try:
+                    with open(config_path, 'r', encoding='utf-8') as f:
+                        config = json.load(f)
+                except Exception:
+                    config = {}
+
             if 'tui' not in config:
                 config['tui'] = {}
             config['tui']['theme'] = theme_name
-            
+
             with open(config_path, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2)
-            
-            return True
         except Exception as e:
             self.logger.warning(f'Failed to save theme preference: {e}')
-            # Show inline error message
+            # Show inline error message using the current theme
             self.add_system_message(f'Failed to save config file: {e}', color='bright_red')
             return False
+
+        # Apply the theme and trigger full screen redraw to update themed elements
+        self.theme = new_theme
+        self.current_theme_name = theme_name
+        self.render_screen()
+        return True
 
     def _handle_resize(self, signum=None, frame=None):
         """Handle terminal resize events.

@@ -1,0 +1,108 @@
+2025-11-16 06:35:38,262 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,271 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,300 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,310 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,321 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,332 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,334 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:35:38,346 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:38,360 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,811 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,827 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,844 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,861 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,873 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,884 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,886 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:35:54,897 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:35:54,912 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:21,776 - juiced.lib.bot - WARNING - Failed to read theme D:\Devel\Juiced\juiced\themes\broken.json: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+2025-11-16 06:37:21,795 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:21,808 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,871 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,880 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,893 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,903 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,915 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,926 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,929 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:37:31,939 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:31,955 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:32,172 - juiced.lib.bot - WARNING - Failed to read theme D:\Devel\Juiced\juiced\themes\broken.json: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+2025-11-16 06:37:32,185 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:37:32,202 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,085 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,094 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,107 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,117 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,127 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,138 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,140 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:39:38,151 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,165 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,318 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,327 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,342 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,412 - juiced.lib.bot - WARNING - Failed to read theme D:\Devel\Juiced\juiced\themes\broken.json: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+2025-11-16 06:39:38,425 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:39:38,435 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:43,032 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:43,044 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:43,056 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,707 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,716 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,728 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,737 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,749 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,760 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,761 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:41:48,766 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,787 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,799 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,813 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,824 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,838 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:48,990 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:49,000 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:49,016 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:49,092 - juiced.lib.bot - WARNING - Failed to read theme D:\Devel\Juiced\juiced\themes\broken.json: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+2025-11-16 06:41:49,105 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:41:49,116 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,163 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,172 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,186 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,195 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,206 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,217 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,219 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:44:10,230 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,244 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,256 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,270 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,283 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,295 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,453 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,462 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,476 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,550 - juiced.lib.bot - WARNING - Failed to read theme D:\Devel\Juiced\juiced\themes\broken.json: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+2025-11-16 06:44:10,564 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:10,575 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,591 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,599 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,612 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,621 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,633 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,645 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,647 - juiced.lib.bot - ERROR - Failed to write to chat log: 'TUIBot' object has no attribute 'chat_log_file'
+2025-11-16 06:44:26,656 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,670 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,683 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,697 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,708 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,720 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,873 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,883 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,897 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,966 - juiced.lib.bot - WARNING - Failed to read theme D:\Devel\Juiced\juiced\themes\broken.json: Expecting property name enclosed in double quotes: line 1 column 3 (char 2)
+2025-11-16 06:44:26,980 - juiced.lib.bot - WARNING - Database module not available
+2025-11-16 06:44:26,989 - juiced.lib.bot - WARNING - Database module not available
