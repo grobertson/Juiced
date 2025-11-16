@@ -75,7 +75,7 @@ Switch themes on the fly with `/theme <name>`:
 
 ##  Built For Beta Testers
 
-This is **v0.2.0**  early, raw, and ready for feedback. DEBUG logging is enabled by default to help us squash bugs together.
+This is **v0.2.7**  early, raw, and ready for feedback. DEBUG logging is enabled by default to help us squash bugs together.
 
 **Found a bug?** Open an issue.  
 **Have an idea?** Start a discussion.  
