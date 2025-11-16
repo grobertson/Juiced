@@ -6,6 +6,9 @@
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+
+*Note: Problems have been reported with this version on MacOS, related to the root certificates available to python. Fix should be in v0.3.0 when it's released. Thanks to naten530 for the assistance in isolating this issue!*
+
 ---
 
 ##  Why Juiced?
