@@ -319,12 +319,18 @@ class TUIBot(Bot):
         if theme_name == "theme.json":
             theme_name = "default"
 
+        # Allow tests to override the themes base directory by setting a
+        # module-level THEMES_BASE (a Path or string). This keeps production
+        # behaviour unchanged while enabling tests to point themes at a
+        # temporary directory.
+        base_dir = Path(globals().get("THEMES_BASE", Path(__file__).parent))
+
         # Check if it's a full path or just a name
         if "/" in theme_name or "\\" in theme_name:
             theme_path = Path(theme_name)
         else:
-            # Look in themes directory
-            theme_path = Path(__file__).parent / "themes" / f"{theme_name}.json"
+            # Look in themes directory under the base_dir
+            theme_path = base_dir / "themes" / f"{theme_name}.json"
 
         try:
             with open(theme_path, "r") as f:
@@ -377,7 +383,8 @@ class TUIBot(Bot):
         Returns:
             list: List of tuples (theme_name, theme_info_dict)
         """
-        themes_dir = Path(__file__).parent / "themes"
+        themes_dir = Path(globals().get("THEMES_BASE", Path(__file__).parent)) / "themes"
+        
         themes = []
 
         if not themes_dir.exists():

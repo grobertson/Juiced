@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.fixture(autouse=True)
-def patch_terminal_and_render(monkeypatch):
+def patch_terminal_and_render(monkeypatch, tmp_path):
     # Provide a minimal fake Terminal and disable full render
     class FakeTerm:
         def __init__(self, width=80, height=24):
@@ -33,6 +33,15 @@ def patch_terminal_and_render(monkeypatch):
 
     monkeypatch.setattr(tui_mod, "Terminal", FakeTerm)
     monkeypatch.setattr(tui_mod.TUIBot, "render_screen", lambda self: None)
+
+    # Ensure this test module's theme lookups point at a temporary dir
+    module_dir = tmp_path / "tui_module"
+    module_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir)
+    except Exception:
+        pass
+
     yield
 
 
@@ -44,10 +53,14 @@ def make_bot():
     )
 
 
-def test_list_and_load_themes(tmp_path):
+def test_list_and_load_themes(tmp_path, monkeypatch):
     bot = make_bot()
-    mod_dir = Path(__import__("juiced.tui_bot").__file__).parent
-    themes_dir = mod_dir / "themes"
+    import juiced.tui_bot as tui_mod
+
+    base = tmp_path / "tui_module"
+    base.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
+    themes_dir = base / "themes"
     themes_dir.mkdir(parents=True, exist_ok=True)
 
     # Create two themes
@@ -75,10 +88,14 @@ def test_list_and_load_themes(tmp_path):
     assert "blue" in names and "simple" in names
 
 
-def test_change_theme_creates_config_when_missing(tmp_path):
+def test_change_theme_creates_config_when_missing(tmp_path, monkeypatch):
     bot = make_bot()
-    mod_dir = Path(__import__("juiced.tui_bot").__file__).parent
-    themes_dir = mod_dir / "themes"
+    import juiced.tui_bot as tui_mod
+
+    base = tmp_path / "tui_module"
+    base.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
+    themes_dir = base / "themes"
     themes_dir.mkdir(parents=True, exist_ok=True)
 
     theme_file = themes_dir / "mytheme.json"
@@ -104,10 +121,14 @@ def test_change_theme_creates_config_when_missing(tmp_path):
     assert loaded.get("tui", {}).get("theme") == "mytheme"
 
 
-def test_change_theme_rejects_missing_colors(tmp_path):
+def test_change_theme_rejects_missing_colors(tmp_path, monkeypatch):
     bot = make_bot()
-    mod_dir = Path(__import__("juiced.tui_bot").__file__).parent
-    themes_dir = mod_dir / "themes"
+    import juiced.tui_bot as tui_mod
+
+    base = tmp_path / "tui_module"
+    base.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
+    themes_dir = base / "themes"
     themes_dir.mkdir(parents=True, exist_ok=True)
 
     bad = themes_dir / "bad.json"
@@ -125,11 +146,15 @@ def test_change_theme_rejects_missing_colors(tmp_path):
     assert "tui" not in loaded or loaded.get("tui", {}).get("theme") != "bad"
 
 
-def test_load_theme_with_invalid_json_returns_fallback(tmp_path):
+def test_load_theme_with_invalid_json_returns_fallback(tmp_path, monkeypatch):
     bot = make_bot()
     # write invalid theme file at absolute path
-    mod_dir = Path(__import__("juiced.tui_bot").__file__).parent
-    themes_dir = mod_dir / "themes"
+    import juiced.tui_bot as tui_mod
+
+    base = tmp_path / "tui_module"
+    base.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
+    themes_dir = base / "themes"
     themes_dir.mkdir(parents=True, exist_ok=True)
 
     badfile = themes_dir / "broken.json"
