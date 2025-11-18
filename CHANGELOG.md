@@ -92,7 +92,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Better documentation
 - Bug fixes from beta testing feedback
 
+### Testing / hygiene
+
+- Tests now use a central `themes_dir` fixture (in `tests/conftest.py`) so theme tests create and read JSON fixtures under pytest's `tmp_path` instead of writing into the packaged `juiced/` directory.
+
+- A test-only override `juiced.tui_bot.THEMES_BASE` is available for tests (monkeypatched with `raising=False`) so theme lookups like `Path(__file__).parent / 'themes'` resolve in the temporary test directory.
+
+- Several test-only theme fixtures were moved out of the package and are used via `tests/fixtures/themes/` and the `themes_dir` fixture. This prevents tests from leaving artifacts in the source tree.
+
 ### Future Features
+
 - Multi-channel support (Alt+1-9 switching)
 - Audio notifications
 - Custom theme editor
