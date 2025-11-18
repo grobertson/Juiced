@@ -1,7 +1,5 @@
 from types import SimpleNamespace
 
-import pytest
-
 
 class FakeTerm:
     def __init__(self, width=80, height=24):

@@ -1,4 +1,3 @@
-import pytest
 
 from juiced.tui_bot import TUIBot
 

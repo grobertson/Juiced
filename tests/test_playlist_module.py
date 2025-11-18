@@ -1,4 +1,3 @@
-import pytest
 
 from juiced.lib.playlist import Playlist, PlaylistItem
 

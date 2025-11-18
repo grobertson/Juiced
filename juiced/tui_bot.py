@@ -27,14 +27,13 @@ Keybindings:
 import asyncio
 import json
 import logging
-import os
 import platform
 import signal
 import sys
 import textwrap
 import time
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 from blessed import Terminal

@@ -3,7 +3,6 @@
 
 import asyncio
 import sys
-from pathlib import Path
 
 from juiced import TUIBot
 from juiced.lib import get_config

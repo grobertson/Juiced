@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from juiced.lib.error import ConnectionClosed, ConnectionFailed, PingTimeout
+from juiced.lib.error import ConnectionClosed
 from juiced.lib.socket_io import SocketIO, SocketIOResponse
 
 
