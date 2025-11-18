@@ -33,7 +33,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
-          python -m pip install pytest coverage
+          # Also install test/dev requirements if present (includes pytest-asyncio)
+          if [ -f requirements-test.txt ]; then python -m pip install -r requirements-test.txt; fi
+          # coverage is still needed explicitly
+          python -m pip install coverage
 
       - name: Run tests with coverage
         run: |
