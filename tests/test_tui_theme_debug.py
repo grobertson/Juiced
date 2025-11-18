@@ -23,20 +23,13 @@ class FakeTerm:
         return lambda s='': s
 
 
-@pytest.fixture(autouse=True)
-def patch_terminal(monkeypatch):
-    import juiced.tui_bot as tui_mod
-    monkeypatch.setattr(tui_mod, 'Terminal', FakeTerm)
-    # avoid heavy rendering
-    monkeypatch.setattr(tui_mod.TUIBot, 'render_screen', lambda self: None)
-    monkeypatch.setattr(tui_mod.TUIBot, 'render_chat', lambda self: None)
-    monkeypatch.setattr(tui_mod.TUIBot, 'render_input', lambda self: None)
-    yield
+# Use centralized `tests/conftest.py::test_environment` which sets
+# `_TEST_LOG_DIR` and patches the TUI Terminal and rendering helpers.
 
 
 def make_bot(config_file='config.json'):
     import juiced.tui_bot as tui_mod
-    return tui_mod.TUIBot(tui_config={}, config_file=str(config_file), domain='example.com', channel='test', log_path='logs_test')
+    return tui_mod.TUIBot(tui_config={}, config_file=str(config_file), domain='example.com', channel='test', log_path=str(_TEST_LOG_DIR))
 
 
 def test_theme_list_and_change_success(tmp_path):

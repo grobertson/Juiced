@@ -9,6 +9,8 @@
 
 *Note: Problems have been reported with this version on MacOS, related to the root certificates available to python. Fix should be in v0.3.0 when it's released. Thanks to naten530 for the assistance in isolating this issue!*
 
+We're actively investigating this macOS root-certificate issue. The project's CI now runs macOS-specific diagnostic checks on pull requests and pushes to capture SSL/OpenSSL and certifi information automatically; this will help us identify and fix platform-specific failures faster.
+
 ---
 
 ##  Why Juiced?

@@ -22,19 +22,12 @@ class FakeTerm:
         return lambda s='': s
 
 
-@pytest.fixture(autouse=True)
-def patch_term(monkeypatch):
-    import juiced.tui_bot as tui_mod
-    monkeypatch.setattr(tui_mod, 'Terminal', FakeTerm)
-    monkeypatch.setattr(tui_mod.TUIBot, 'render_screen', lambda self: None)
-    monkeypatch.setattr(tui_mod.TUIBot, 'render_chat', lambda self: None)
-    monkeypatch.setattr(tui_mod.TUIBot, 'render_input', lambda self: None)
-    yield
+# Centralized test fixture (tests/conftest.py) sets _TEST_LOG_DIR and patches TUI terminal.
 
 
 def make_bot():
     import juiced.tui_bot as tui_mod
-    return tui_mod.TUIBot(tui_config={}, config_file='cfg.json', domain='example.com', channel='test', log_path='logs_test')
+    return tui_mod.TUIBot(tui_config={}, config_file='cfg.json', domain='example.com', channel='test', log_path=str(_TEST_LOG_DIR))
 
 
 @pytest.mark.asyncio
