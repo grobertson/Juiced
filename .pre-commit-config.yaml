@@ -4,9 +4,11 @@ repos:
     hooks:
       - id: black
 
-  # Ruff hook removed in this WIP patch because the repository URL used earlier
-  # failed to fetch in the current environment. We can add Ruff back later
-  # with the correct repo/rev once you confirm the desired version.
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.1.0
+    hooks:
+      - id: ruff
+        args: ["--fix"]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.12.0
