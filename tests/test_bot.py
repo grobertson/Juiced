@@ -4,7 +4,12 @@ import json
 import pytest
 
 from juiced.lib.bot import Bot
-from juiced.lib.error import SocketConfigError, ChannelError, ChannelPermissionError, Kicked
+from juiced.lib.error import (
+    ChannelError,
+    ChannelPermissionError,
+    Kicked,
+    SocketConfigError,
+)
 from juiced.lib.user import User
 
 
@@ -22,17 +27,17 @@ class FakeSocket:
 
     async def close(self):
         if self.close_raises:
-            raise RuntimeError('close failed')
+            raise RuntimeError("close failed")
         self.closed = True
 
     async def recv(self):
         await asyncio.sleep(0)
-        return ('noop', {})
+        return ("noop", {})
 
 
 def make_bot():
     # create a Bot with simple domain/channel and no DB
-    return Bot('example.com', 'chan', user='bot')
+    return Bot("example.com", "chan", user="bot")
 
 
 def test_on_off_handlers():
@@ -40,19 +45,19 @@ def test_on_off_handlers():
     calls = []
 
     def h1(e, d):
-        calls.append(('h1', e, d))
+        calls.append(("h1", e, d))
 
     async def h2(e, d):
-        calls.append(('h2', e, d))
+        calls.append(("h2", e, d))
 
-    bot.on('evt', h1, h2)
-    assert 'evt' in bot.handlers
+    bot.on("evt", h1, h2)
+    assert "evt" in bot.handlers
     # duplicate add should warn but not duplicate
-    bot.on('evt', h1)
-    assert bot.handlers['evt'].count(h1) == 1
+    bot.on("evt", h1)
+    assert bot.handlers["evt"].count(h1) == 1
 
-    bot.off('evt', h1)
-    assert h1 not in bot.handlers['evt']
+    bot.off("evt", h1)
+    assert h1 not in bot.handlers["evt"]
 
 
 @pytest.mark.asyncio
@@ -61,31 +66,31 @@ async def test_trigger_sync_and_async_handlers_stop():
     seq = []
 
     def s1(e, d):
-        seq.append('s1')
+        seq.append("s1")
 
     async def a1(e, d):
-        seq.append('a1')
+        seq.append("a1")
 
     def stopper(e, d):
-        seq.append('stopper')
+        seq.append("stopper")
         return True
 
-    bot.on('test', s1, a1)
-    await bot.trigger('test', {'x': 1})
-    assert seq == ['s1', 'a1']
+    bot.on("test", s1, a1)
+    await bot.trigger("test", {"x": 1})
+    assert seq == ["s1", "a1"]
 
     seq.clear()
-    bot.on('test', stopper)
-    await bot.trigger('test', {})
+    bot.on("test", stopper)
+    await bot.trigger("test", {})
     # stopper should have stopped further handlers
-    assert 'stopper' in seq
+    assert "stopper" in seq
 
 
 @pytest.mark.asyncio
 async def test_trigger_kick_raises():
     bot = make_bot()
     with pytest.raises(Kicked):
-        await bot.trigger('kick', {'reason': 'nope'})
+        await bot.trigger("kick", {"reason": "nope"})
 
 
 @pytest.mark.asyncio
@@ -94,15 +99,17 @@ async def test_get_socket_config_success_and_failure(monkeypatch):
 
     async def fake_get(url):
         # return JSON string with secure server
-        return json.dumps({'servers': [{'url': 's1', 'secure': False}, {'url': 's2', 'secure': True}]})
+        return json.dumps(
+            {"servers": [{"url": "s1", "secure": False}, {"url": "s2", "secure": True}]}
+        )
 
     bot.get = fake_get
     await bot.get_socket_config()
     assert bot.server is not None
-    assert 's2' in bot.server
+    assert "s2" in bot.server
 
     async def fake_get_bad(url):
-        return json.dumps({'servers': []})
+        return json.dumps({"servers": []})
 
     bot.get = fake_get_bad
     with pytest.raises(SocketConfigError):
@@ -130,37 +137,37 @@ async def test_disconnect_close_behavior():
 async def test_chat_success_and_timeouts():
     bot = make_bot()
     # ensure permission checks pass
-    bot.channel.permissions['chat'] = -1
-    bot.user.name = 'bot'
+    bot.channel.permissions["chat"] = -1
+    bot.user.name = "bot"
 
     # success
-    bot.socket = FakeSocket(emit_return=('chatMsg', {'username': 'bot', 'msg': 'hi'}))
-    res = await bot.chat('hi')
-    assert res['msg'] == 'hi'
+    bot.socket = FakeSocket(emit_return=("chatMsg", {"username": "bot", "msg": "hi"}))
+    res = await bot.chat("hi")
+    assert res["msg"] == "hi"
 
     # timeout (emit returns None)
     bot.socket = FakeSocket(emit_return=None)
     with pytest.raises(ChannelError):
-        await bot.chat('hi')
+        await bot.chat("hi")
 
 
 @pytest.mark.asyncio
 async def test_kick_permission_and_success():
     bot = make_bot()
     # prepare userlist and users
-    target = User('alice', rank=0)
+    target = User("alice", rank=0)
     bot.channel.userlist.add(target)
 
     # set bot rank low => cannot kick
     bot.user.rank = 0
-    bot.channel.permissions['kick'] = -1
+    bot.channel.permissions["kick"] = -1
     with pytest.raises(ChannelPermissionError):
-        await bot.kick('alice')
+        await bot.kick("alice")
 
     # set bot rank higher and socket returns userLeave
     bot.user.rank = 100
-    bot.socket = FakeSocket(emit_return=('userLeave', {'name': 'alice'}))
-    await bot.kick('alice')
+    bot.socket = FakeSocket(emit_return=("userLeave", {"name": "alice"}))
+    await bot.kick("alice")
 
 
 @pytest.mark.asyncio
@@ -168,7 +175,7 @@ async def test_login_success_and_needpassword():
     bot = make_bot()
 
     # helper to produce sequential emit responses
-    seq = [('', {}), ('login', {'success': True})]
+    seq = [("", {}), ("login", {"success": True})]
 
     async def emit_seq(*args, **kwargs):
         return seq.pop(0)
@@ -181,7 +188,7 @@ async def test_login_success_and_needpassword():
     await bot.login()
 
     # now simulate needPassword on joinChannel
-    seq2 = [('needPassword', {})]
+    seq2 = [("needPassword", {})]
 
     async def emit_seq2(*args, **kwargs):
         return seq2.pop(0)
@@ -198,18 +205,20 @@ async def test_login_success_and_needpassword():
 @pytest.mark.asyncio
 async def test_pm_success_and_error():
     bot = make_bot()
-    bot.channel.permissions['chat'] = -1
-    bot.user.name = 'bot'
+    bot.channel.permissions["chat"] = -1
+    bot.user.name = "bot"
 
     # success
-    bot.socket = FakeSocket(emit_return=('pm', {'username': 'bot', 'to': 'alice', 'msg': 'hi'}))
-    res = await bot.pm('alice', 'hi')
-    assert res['msg'] == 'hi'
+    bot.socket = FakeSocket(
+        emit_return=("pm", {"username": "bot", "to": "alice", "msg": "hi"})
+    )
+    res = await bot.pm("alice", "hi")
+    assert res["msg"] == "hi"
 
     # error
-    bot.socket = FakeSocket(emit_return=('errorMsg', {'msg': 'no pm'}))
+    bot.socket = FakeSocket(emit_return=("errorMsg", {"msg": "no pm"}))
     with pytest.raises(ChannelError):
-        await bot.pm('alice', 'hi')
+        await bot.pm("alice", "hi")
 
 
 @pytest.mark.asyncio
@@ -217,17 +226,22 @@ async def test_add_media_success_and_queuefail(monkeypatch):
     from juiced.lib.media_link import MediaLink
 
     bot = make_bot()
-    bot.channel.permissions['oplaylistadd'] = -1
-    bot.user.name = 'bot'
-    link = MediaLink('yt', 'abc')
+    bot.channel.permissions["oplaylistadd"] = -1
+    bot.user.name = "bot"
+    link = MediaLink("yt", "abc")
 
     # success
-    bot.socket = FakeSocket(emit_return=('queue', {'item': {'media': {'type': 'yt', 'id': 'abc'}, 'queueby': 'bot'}}))
+    bot.socket = FakeSocket(
+        emit_return=(
+            "queue",
+            {"item": {"media": {"type": "yt", "id": "abc"}, "queueby": "bot"}},
+        )
+    )
     res = await bot.add_media(link)
-    assert 'item' in res
+    assert "item" in res
 
     # queueFail
-    bot.socket = FakeSocket(emit_return=('queueFail', {'msg': 'bad'}))
+    bot.socket = FakeSocket(emit_return=("queueFail", {"msg": "bad"}))
     with pytest.raises(ChannelError):
         await bot.add_media(link)
 
@@ -236,7 +250,7 @@ async def test_add_media_success_and_queuefail(monkeypatch):
 async def test_pause_leader_and_not_leader():
     bot = make_bot()
     # not leader -> raise
-    bot.user = User('bot')
+    bot.user = User("bot")
     bot.channel.userlist.leader = None
     with pytest.raises(ChannelPermissionError):
         await bot.pause()

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
 import json
 import logging
+import sys
 
-from .socket_io import SocketIO
 from .proxy import set_proxy
+from .socket_io import SocketIO
 
 try:
     import yaml
+
     HAS_YAML = True
 except ImportError:
     HAS_YAML = False
@@ -32,10 +33,7 @@ class RobustFileHandler(logging.FileHandler):
                 raise
 
 
-def configure_logger(logger,
-                     log_file=None,
-                     log_format=None,
-                     log_level=logging.INFO):
+def configure_logger(logger, log_file=None, log_format=None, log_level=logging.INFO):
     """Configure a logger with a file or stream handler
 
     Args:
@@ -53,9 +51,9 @@ def configure_logger(logger,
         # Use RobustFileHandler to catch flush errors
         handler = RobustFileHandler(
             log_file,
-            mode='a',
-            encoding='utf-8',
-            errors='replace'  # Replace problematic chars
+            mode="a",
+            encoding="utf-8",
+            errors="replace",  # Replace problematic chars
         )
     else:
         handler = logging.StreamHandler(log_file)  # Default to stderr if None
@@ -82,12 +80,12 @@ def configure_proxy(conf):
         conf: Configuration dictionary containing optional 'proxy' key
               Format: "host:port" or just "host" (default port 1080)
     """
-    proxy = conf.get('proxy', None)
+    proxy = conf.get("proxy", None)
     if not proxy:
         return
 
     # Parse proxy address - split on last colon
-    proxy = proxy.rsplit(':', 1)
+    proxy = proxy.rsplit(":", 1)
     if len(proxy) == 1:
         # No port specified, use default SOCKS port
         addr, port = proxy[0], 1080
@@ -112,36 +110,36 @@ def get_config():
     """
     # Validate command line arguments
     if len(sys.argv) != 2:
-        print('usage: %s <config file>' % sys.argv[0], file=sys.stderr)
+        print("usage: %s <config file>" % sys.argv[0], file=sys.stderr)
         sys.exit(1)
 
     config_file = sys.argv[1]
-    
+
     # Determine file format from extension
-    if config_file.endswith(('.yaml', '.yml')):
+    if config_file.endswith((".yaml", ".yml")):
         if not HAS_YAML:
-            print('ERROR: PyYAML is required for YAML config files', file=sys.stderr)
-            print('Install with: pip install pyyaml', file=sys.stderr)
+            print("ERROR: PyYAML is required for YAML config files", file=sys.stderr)
+            print("Install with: pip install pyyaml", file=sys.stderr)
             sys.exit(1)
         # Load YAML configuration file
-        with open(config_file, 'r', encoding='utf-8') as fp:
+        with open(config_file, "r", encoding="utf-8") as fp:
             conf = yaml.safe_load(fp)
     else:
         # Load JSON configuration file (default)
-        with open(config_file, 'r', encoding='utf-8') as fp:
+        with open(config_file, "r", encoding="utf-8") as fp:
             conf = json.load(fp)
 
     # Extract connection retry settings
-    retry = conf.get('retry', 0)  # Number of connection retries
-    retry_delay = conf.get('retry_delay', 1)  # Seconds between retries
+    retry = conf.get("retry", 0)  # Number of connection retries
+    retry_delay = conf.get("retry_delay", 1)  # Seconds between retries
 
     # Parse log level from string to logging constant
-    log_level = getattr(logging, conf.get('log_level', 'info').upper())
+    log_level = getattr(logging, conf.get("log_level", "info").upper())
 
     # Configure root logger with basic settings
     logging.basicConfig(
         level=log_level,
-        format='[%(asctime).19s] [%(name)s] [%(levelname)s] %(message)s'
+        format="[%(asctime).19s] [%(name)s] [%(levelname)s] %(message)s",
     )
 
     # Configure SOCKS proxy if specified in config
@@ -149,15 +147,16 @@ def get_config():
 
     # Return full config and extracted bot parameters
     return conf, {
-        'domain': conf['domain'],  # CyTube server domain (required)
-        'user': conf.get('user', None),  # Bot username/credentials (optional)
-        'channel': conf.get('channel', None),  # Channel name/password (optional)
-        'response_timeout': conf.get('response_timeout', 0.1),  # Socket.IO response timeout
-        'restart_delay': conf.get('restart_delay', None),  # Delay before reconnect on error
-        'socket_io': lambda url, loop: SocketIO.connect(
-            url,
-            retry=retry,
-            retry_delay=retry_delay,
-            loop=loop
-        )
+        "domain": conf["domain"],  # CyTube server domain (required)
+        "user": conf.get("user", None),  # Bot username/credentials (optional)
+        "channel": conf.get("channel", None),  # Channel name/password (optional)
+        "response_timeout": conf.get(
+            "response_timeout", 0.1
+        ),  # Socket.IO response timeout
+        "restart_delay": conf.get(
+            "restart_delay", None
+        ),  # Delay before reconnect on error
+        "socket_io": lambda url, loop: SocketIO.connect(
+            url, retry=retry, retry_delay=retry_delay, loop=loop
+        ),
     }

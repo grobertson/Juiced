@@ -3,19 +3,19 @@ import pytest
 from juiced.lib.playlist import Playlist, PlaylistItem
 
 
-def make_item_data(uid, title='t', seconds=10, queueby='u'):
+def make_item_data(uid, title="t", seconds=10, queueby="u"):
     return {
-        'uid': uid,
-        'temp': False,
-        'queueby': queueby,
-        'media': {'type': 'yt', 'id': f'id{uid}', 'title': title, 'seconds': seconds}
+        "uid": uid,
+        "temp": False,
+        "queueby": queueby,
+        "media": {"type": "yt", "id": f"id{uid}", "title": title, "seconds": seconds},
     }
 
 
 def test_playlist_item_and_eq_and_str():
-    data = make_item_data(1, 'Title')
+    data = make_item_data(1, "Title")
     it = PlaylistItem(data)
-    assert str(it).startswith('<playlist item #1')
+    assert str(it).startswith("<playlist item #1")
     assert it == 1
     it2 = PlaylistItem(make_item_data(1))
     assert it == it2

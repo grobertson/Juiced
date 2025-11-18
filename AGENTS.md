@@ -48,7 +48,7 @@ python -m pip install -r requirements.txt
 python -m pip install pytest coverage
 coverage run -m pytest
 coverage report --fail-under=60
-``` 
+```
 
 Suggested CI enforcement (GitHub Actions snippet)
 ------------------------------------------------
@@ -73,7 +73,7 @@ jobs:
           python -m pip install pytest coverage
           coverage run -m pytest
           coverage report --fail-under=60
-``` 
+```
 
 Error message guidance (short)
 ------------------------------

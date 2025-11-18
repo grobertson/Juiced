@@ -14,7 +14,7 @@ def test_set_proxy_raises_when_missing_pysocks():
     from juiced.lib.error import ProxyConfigError
 
     with pytest.raises(ProxyConfigError):
-        proxy.set_proxy('127.0.0.1', 1080)
+        proxy.set_proxy("127.0.0.1", 1080)
 
 
 def test_wrap_module_raises_when_missing_pysocks():

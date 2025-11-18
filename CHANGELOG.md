@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2025-11-14
 
 ### Added
-- Initial beta release of Juiced! 
+- Initial beta release of Juiced!
 - Full-featured TUI chat client for CyTube
 - 11 robot-themed color schemes (HAL 9000, R2-D2, C-3PO, T-800, WALL-E, RoboCop, Robby, Marvin, Johnny 5, Data, Default)
 - Smart tab completion for usernames and emotes

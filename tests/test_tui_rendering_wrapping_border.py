@@ -1,5 +1,6 @@
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 
 class FakeTerm:
@@ -9,8 +10,14 @@ class FakeTerm:
         self.width = width
         self.height = height
         # provide common color functions used by code
-        for name in ['bright_black', 'white', 'bright_white', 'bright_blue', 'black_on_cyan']:
-            setattr(self, name, lambda s='': s)
+        for name in [
+            "bright_black",
+            "white",
+            "bright_white",
+            "bright_blue",
+            "black_on_cyan",
+        ]:
+            setattr(self, name, lambda s="": s)
 
     class Loc:
         def __init__(self, term, x, y):
@@ -31,7 +38,7 @@ class FakeTerm:
 
     def __getattr__(self, name):
         # Return simple passthroughs for color functions
-        return lambda s='': s
+        return lambda s="": s
 
 
 # Centralized fixture in `tests/conftest.py` provides Terminal/patching
@@ -39,7 +46,14 @@ class FakeTerm:
 
 def make_bot(width=60, height=20):
     import juiced.tui_bot as tui_mod
-    bot = tui_mod.TUIBot(tui_config={}, config_file='cfg.json', domain='example.com', channel='test', log_path=str(_TEST_LOG_DIR))
+
+    bot = tui_mod.TUIBot(
+        tui_config={},
+        config_file="cfg.json",
+        domain="example.com",
+        channel="test",
+        log_path=str(_TEST_LOG_DIR),
+    )
     bot.term = FakeTerm(width=width, height=height)
     return bot
 
@@ -48,11 +62,11 @@ def capture_prints(monkeypatch):
     records = []
 
     def fake_print(*args, **kwargs):
-        txt = ''.join(str(a) for a in args)
+        txt = "".join(str(a) for a in args)
         loc = FakeTerm.CURRENT_LOC
         records.append((loc, txt))
 
-    monkeypatch.setattr('builtins.print', fake_print)
+    monkeypatch.setattr("builtins.print", fake_print)
     return records
 
 
@@ -66,33 +80,43 @@ def test_border_not_overwritten_by_exact_length_message(monkeypatch):
     # Create a message sized to exactly fill the chat area when accounting for prefix
     chat_width = bot.term.width - user_list_width - 1
     # Use short username to make prefix predictable
-    username = 'u'
-    timestamp = '00:00:00'
+    username = "u"
+    timestamp = "00:00:00"
 
     # Compute prefix length using the same logic as TUIBot
-    prefix_len = len(f'[{timestamp}] ') + len(f'<{username}> ')
+    prefix_len = len(f"[{timestamp}] ") + len(f"<{username}> ")
     # Determine message length that will exactly match chat_width
     msg_len = chat_width - prefix_len
     if msg_len < 1:
-        pytest.skip('terminal too small for deterministic test')
+        pytest.skip("terminal too small for deterministic test")
 
-    message = 'X' * msg_len
+    message = "X" * msg_len
 
     # Append chat line
-    bot.chat_history.append({'timestamp': timestamp, 'username': username, 'message': message, 'prefix': '', 'color': 'white'})
+    bot.chat_history.append(
+        {
+            "timestamp": timestamp,
+            "username": username,
+            "message": message,
+            "prefix": "",
+            "color": "white",
+        }
+    )
 
     # Provide a minimal channel.userlist so render_users runs and prints the vertical separator
-    user = SimpleNamespace(name='leader', rank=4, afk=False, muted=False, smuted=False)
-    ul = { 'leader': user }
+    user = SimpleNamespace(name="leader", rank=4, afk=False, muted=False, smuted=False)
+    ul = {"leader": user}
     # add helper attributes used by render_users
     userlist_obj = SimpleNamespace(**ul)
+
     # Make it act like a mapping for len() and iteration
     class UL(dict):
         pass
+
     ul_wrap = UL(leader=user)
     ul_wrap.count = 1
     ul_wrap.leader = user
-    bot.channel = SimpleNamespace(name='test', userlist=ul_wrap, playlist=None)
+    bot.channel = SimpleNamespace(name="test", userlist=ul_wrap, playlist=None)
 
     bot.render_chat()
     bot.render_users()
@@ -105,8 +129,10 @@ def test_border_not_overwritten_by_exact_length_message(monkeypatch):
 
     # Verify that vertical separator was printed at the expected x position
     user_list_x = bot.term.width - user_list_width
-    sep_found = any(loc and loc[0] == (user_list_x - 1) and '│' in txt for loc, txt in records)
-    assert sep_found, 'User list separator not printed at expected column'
+    sep_found = any(
+        loc and loc[0] == (user_list_x - 1) and "│" in txt for loc, txt in records
+    )
+    assert sep_found, "User list separator not printed at expected column"
 
 
 def test_long_unbroken_word_wrapping_does_not_overflow(monkeypatch):
@@ -116,12 +142,20 @@ def test_long_unbroken_word_wrapping_does_not_overflow(monkeypatch):
     records = capture_prints(monkeypatch)
 
     # Create a very long unbroken token (simulate a long URL)
-    long_token = 'http://' + ('a' * 200)
-    username = 'bob'
-    timestamp = '00:00:00'
+    long_token = "http://" + ("a" * 200)
+    username = "bob"
+    timestamp = "00:00:00"
 
     # Append chat line with long unbroken token
-    bot.chat_history.append({'timestamp': timestamp, 'username': username, 'message': long_token, 'prefix': '', 'color': 'white'})
+    bot.chat_history.append(
+        {
+            "timestamp": timestamp,
+            "username": username,
+            "message": long_token,
+            "prefix": "",
+            "color": "white",
+        }
+    )
 
     # Ensure render does not print beyond chat width
     bot.render_chat()

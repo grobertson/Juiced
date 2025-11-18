@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from .util import uncloak_ip
 
+
 class User:
     """CyTube user.
 
@@ -27,14 +28,12 @@ class User:
         `True` if user is shadow muted.
     """
 
-    def __init__(self,
-                 name='', password=None,
-                 rank=-1, profile=None, meta=None):
+    def __init__(self, name="", password=None, rank=-1, profile=None, meta=None):
         self.name = name
         self.password = password
         self.rank = rank
-        self.image = ''
-        self.text = ''
+        self.image = ""
+        self.text = ""
         self.afk = False
         self.muted = False
         self.smuted = False
@@ -47,7 +46,10 @@ class User:
         if self.ip is None:
             return '<user "%s" (rank %.2f)>' % (self.name, self.rank)
         return '<user "%s" [%s %s] (rank %.2f)>' % (
-            self.name, self.ip, self.uncloaked_ip, self.rank
+            self.name,
+            self.ip,
+            self.uncloaked_ip,
+            self.rank,
         )
 
     __repr__ = __str__
@@ -61,8 +63,7 @@ class User:
 
     @property
     def ip(self):
-        """Cloaked IP.
-        """
+        """Cloaked IP."""
         return self._ip
 
     @ip.setter
@@ -75,41 +76,36 @@ class User:
 
     @property
     def profile(self):
-        return {
-            'image': self.image,
-            'text': self.text
-        }
+        return {"image": self.image, "text": self.text}
 
     @profile.setter
     def profile(self, profile):
         if profile is None:
             profile = {}
-        self.image = profile.get('image', '')
-        self.text = profile.get('text', '')
+        self.image = profile.get("image", "")
+        self.text = profile.get("text", "")
 
     @property
     def meta(self):
         return {
-            'afk': self.afk,
-            'muted': self.muted,
-            'smuted': self.smuted,
-            'ip': self.ip,
-            'aliases': self.aliases
+            "afk": self.afk,
+            "muted": self.muted,
+            "smuted": self.smuted,
+            "ip": self.ip,
+            "aliases": self.aliases,
         }
 
     @meta.setter
     def meta(self, meta):
         if meta is None:
             meta = {}
-        self.afk = meta.get('afk', False)
-        self.muted = meta.get('muted', False)
-        self.smuted = meta.get('smuted', False)
-        self.ip = meta.get('ip', None)
-        self.aliases = meta.get('aliases', [])
+        self.afk = meta.get("afk", False)
+        self.muted = meta.get("muted", False)
+        self.smuted = meta.get("smuted", False)
+        self.ip = meta.get("ip", None)
+        self.aliases = meta.get("aliases", [])
 
-    def update(self,
-               name=None, rank=None,
-               profile=None, meta=None):
+    def update(self, name=None, rank=None, profile=None, meta=None):
         """Update user data.
 
         Parameters
@@ -167,7 +163,7 @@ class UserList(dict):
             If user exists.
         """
         if user.name in self:
-            raise ValueError('user exists: %s' % user.name)
+            raise ValueError("user exists: %s" % user.name)
         self[user.name] = user
 
     def get(self, name):

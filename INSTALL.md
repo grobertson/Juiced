@@ -127,14 +127,14 @@ This installs:
    ```bash
    # Windows
    copy configs\config.yaml.example configs\config.yaml
-   
+
    # macOS/Linux
    cp configs/config.yaml.example configs/config.yaml
    ```
 
 2. **Edit the config file:**
    Open `configs/config.yaml` in your favorite text editor and change:
-   
+
    ```yaml
    channel: your-channel-name      # ← Your CyTube channel
    user:

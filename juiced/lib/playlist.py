@@ -21,13 +21,13 @@ class PlaylistItem:
     """
 
     def __init__(self, data):
-        self.uid = data['uid']
-        self.temp = data['temp']
-        self.username = data['queueby']
-        data = data['media']
-        self.link = MediaLink(data['type'], data['id'])
-        self.title = data['title']
-        self.duration = data['seconds']
+        self.uid = data["uid"]
+        self.temp = data["temp"]
+        self.username = data["queueby"]
+        data = data["media"]
+        self.link = MediaLink(data["type"], data["id"])
+        self.title = data["title"]
+        self.duration = data["seconds"]
 
     def __str__(self):
         return '<playlist item #%s "%s">' % (self.uid, self.title)
@@ -67,7 +67,7 @@ class Playlist:
         self.queue = []
 
     def __str__(self):
-        return '<playlist %s>' % self.queue
+        return "<playlist %s>" % self.queue
 
     __repr__ = __str__
 
@@ -168,8 +168,7 @@ class Playlist:
         self.add(after, item)
 
     def clear(self):
-        """Clear playlist.
-        """
+        """Clear playlist."""
         self.time = 0
         self.paused = True
         self.current = None

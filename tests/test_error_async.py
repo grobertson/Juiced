@@ -1,4 +1,5 @@
 import asyncio
+
 import pytest
 
 from juiced.lib.error import Kicked

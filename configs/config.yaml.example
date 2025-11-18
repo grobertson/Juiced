@@ -13,7 +13,7 @@ channel: "your-channel-name"
 user:
     - "your-username"
     - "your-password"
-    
+
 # Socket.IO settings
 # Increase timeout for slower connections (default: 10 seconds)
 response_timeout: 10
@@ -31,12 +31,12 @@ tui:
   # Theme name (see themes/ directory)
   # Options: default, hal9000, r2d2, c3po, t800, walle, robby, marvin, johnny5, robocop, data
   theme: robby
-  
+
   # Show join/quit messages in chat
   show_join_quit: true
-  
+
   # Clock format: 12h (AM/PM) or 24h (military time)
   clock_format: 12h
-  
+
   # Hide AFK users from userlist (default: false)
   hide_afk_users: false

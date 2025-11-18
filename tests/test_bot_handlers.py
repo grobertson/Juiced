@@ -1,7 +1,7 @@
 import asyncio
-import pytest
-
 from types import SimpleNamespace
+
+import pytest
 
 from juiced.lib.bot import Bot
 from juiced.lib.error import SocketIOError
@@ -9,7 +9,7 @@ from juiced.lib.user import User
 
 
 def make_bot():
-    return Bot('example.com', 'chan', user='bot')
+    return Bot("example.com", "chan", user="bot")
 
 
 def test_on_userlist_and_add_user_and_usercount_updates_db():
@@ -20,53 +20,53 @@ def test_on_userlist_and_add_user_and_usercount_updates_db():
 
     class FakeDB:
         def user_joined(self, username):
-            calls.setdefault('joined', []).append(username)
+            calls.setdefault("joined", []).append(username)
 
         def update_high_water_mark(self, chat_users, connected_count):
-            calls['hwm'] = (chat_users, connected_count)
+            calls["hwm"] = (chat_users, connected_count)
 
         def user_left(self, username):
-            calls.setdefault('left', []).append(username)
+            calls.setdefault("left", []).append(username)
 
     bot.db = FakeDB()
 
     # initial userlist
-    bot._on_userlist(None, [{'name': 'alice', 'rank': 1}, {'name': 'bob', 'rank': 2}])
-    assert 'alice' in bot.channel.userlist
-    assert 'bob' in bot.channel.userlist
+    bot._on_userlist(None, [{"name": "alice", "rank": 1}, {"name": "bob", "rank": 2}])
+    assert "alice" in bot.channel.userlist
+    assert "bob" in bot.channel.userlist
 
     # add user
-    bot._on_addUser(None, {'name': 'carol'})
-    assert 'carol' in bot.channel.userlist
-    assert 'carol' in calls.get('joined', [])
+    bot._on_addUser(None, {"name": "carol"})
+    assert "carol" in bot.channel.userlist
+    assert "carol" in calls.get("joined", [])
 
     # usercount event should update db high water mark
     bot._on_usercount(None, 42)
-    assert calls.get('hwm') is not None
+    assert calls.get("hwm") is not None
 
 
 def test_set_user_meta_and_rank_and_afk_and_leader():
     bot = make_bot()
     # add user
-    bot.channel.userlist.add(User('dave'))
+    bot.channel.userlist.add(User("dave"))
 
     # set user meta for existing user - set known meta keys
-    bot._on_setUserMeta(None, {'name': 'dave', 'meta': {'afk': True, 'aliases': ['x']}})
-    m = bot.channel.userlist['dave'].meta
-    assert m['afk'] is True
-    assert 'x' in m['aliases']
+    bot._on_setUserMeta(None, {"name": "dave", "meta": {"afk": True, "aliases": ["x"]}})
+    m = bot.channel.userlist["dave"].meta
+    assert m["afk"] is True
+    assert "x" in m["aliases"]
 
     # set rank
-    bot._on_setUserRank(None, {'name': 'dave', 'rank': 3})
-    assert bot.channel.userlist['dave'].rank == 3
+    bot._on_setUserRank(None, {"name": "dave", "rank": 3})
+    assert bot.channel.userlist["dave"].rank == 3
 
     # set afk
-    bot._on_setAFK(None, {'name': 'dave', 'afk': True})
-    assert bot.channel.userlist['dave'].afk is True
+    bot._on_setAFK(None, {"name": "dave", "afk": True})
+    assert bot.channel.userlist["dave"].afk is True
 
     # set leader
-    bot._on_setLeader(None, bot.channel.userlist['dave'])
-    assert bot.channel.userlist.leader == bot.channel.userlist['dave']
+    bot._on_setLeader(None, bot.channel.userlist["dave"])
+    assert bot.channel.userlist.leader == bot.channel.userlist["dave"]
 
 
 @pytest.mark.asyncio
@@ -80,7 +80,7 @@ async def test_run_creates_and_cancels_background_tasks_on_socketioerror():
     async def fake_login():
         class S:
             async def recv(self):
-                raise SocketIOError('boom')
+                raise SocketIOError("boom")
 
             async def close(self):
                 return None

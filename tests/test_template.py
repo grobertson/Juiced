@@ -7,6 +7,7 @@ Guidance:
 - For async code, use `pytest.mark.asyncio` or `pytest-asyncio` fixtures.
 """
 
+
 def test_arithmetic_happy_path():
     # Arrange
     a = 2

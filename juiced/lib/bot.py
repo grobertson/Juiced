@@ -1,22 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import re
-import json
-import logging
 import asyncio
 import collections
+import json
+import logging
+import re
 
-from .error import (
-    CytubeError,
-    SocketConfigError, LoginError,
-    ChannelError, ChannelPermissionError, Kicked
-)
-from .socket_io import SocketIO, SocketIOResponse, SocketIOError
 from .channel import Channel
-from .user import User
-from .playlist import PlaylistItem
+from .error import (
+    ChannelError,
+    ChannelPermissionError,
+    CytubeError,
+    Kicked,
+    LoginError,
+    SocketConfigError,
+)
 from .media_link import MediaLink
-from .util import get as default_get, to_sequence
+from .playlist import PlaylistItem
+from .socket_io import SocketIO, SocketIOError, SocketIOResponse
+from .user import User
+from .util import get as default_get
+from .util import to_sequence
 
 try:
     from common.database import BotDatabase
@@ -51,30 +55,35 @@ class Bot:
     handlers : `collections.defaultdict` of (`str`, `list` of `function`)
         Event handlers.
     """
+
     logger = logging.getLogger(__name__)
 
-    SOCKET_CONFIG_URL = '%(domain)s/socketconfig/%(channel)s.json'
-    SOCKET_IO_URL = '%(domain)s/socket.io/'
+    SOCKET_CONFIG_URL = "%(domain)s/socketconfig/%(channel)s.json"
+    SOCKET_IO_URL = "%(domain)s/socket.io/"
 
-    GUEST_LOGIN_LIMIT = re.compile(r'guest logins .* ([0-9]+) seconds\.', re.I)
-    MUTED = re.compile(r'.*\bmuted', re.I)
+    GUEST_LOGIN_LIMIT = re.compile(r"guest logins .* ([0-9]+) seconds\.", re.I)
+    MUTED = re.compile(r".*\bmuted", re.I)
 
     EVENT_LOG_LEVEL = {
-        'mediaUpdate': logging.DEBUG,
-        'channelCSSJS': logging.DEBUG,
-        'emoteList': logging.DEBUG
+        "mediaUpdate": logging.DEBUG,
+        "channelCSSJS": logging.DEBUG,
+        "emoteList": logging.DEBUG,
     }
 
     EVENT_LOG_LEVEL_DEFAULT = logging.INFO
 
-    def __init__(self, domain,
-                 channel, user=None,
-                 restart_delay=5,
-                 response_timeout=0.1,
-                 get=default_get,
-                 socket_io=SocketIO.connect,
-                 db_path='bot_data.db',
-                 enable_db=True):
+    def __init__(
+        self,
+        domain,
+        channel,
+        user=None,
+        restart_delay=5,
+        response_timeout=0.1,
+        get=default_get,
+        socket_io=SocketIO.connect,
+        db_path="bot_data.db",
+        enable_db=True,
+    ):
         """
         Parameters
         ----------
@@ -100,6 +109,7 @@ class Bot:
             Whether to enable database tracking.
         """
         import time
+
         self.get = get
         self.socket_io = socket_io
         self.response_timeout = response_timeout
@@ -122,14 +132,14 @@ class Bot:
         if enable_db and BotDatabase is not None:
             try:
                 self.db = BotDatabase(db_path)
-                self.logger.info('Database tracking enabled')
+                self.logger.info("Database tracking enabled")
             except Exception as e:
-                self.logger.error('Failed to initialize database: %s', e)
+                self.logger.error("Failed to initialize database: %s", e)
         elif enable_db:
-            self.logger.warning('Database module not available')
+            self.logger.warning("Database module not available")
 
         for attr in dir(self):
-            if attr.startswith('_on_'):
+            if attr.startswith("_on_"):
                 self.on(attr[4:], getattr(self, attr))
 
     def _on_rank(self, _, data):
@@ -139,8 +149,8 @@ class Bot:
         self.channel.motd = data
 
     def _on_channelCSSJS(self, _, data):
-        self.channel.css = data.get('css', '')
-        self.channel.js = data.get('js', '')
+        self.channel.css = data.get("css", "")
+        self.channel.js = data.get("js", "")
 
     def _on_channelOpts(self, _, data):
         self.channel.options = data
@@ -166,23 +176,23 @@ class Bot:
     @staticmethod
     def _on_needPassword(_, data):
         if data:
-            raise LoginError('invalid channel password')
+            raise LoginError("invalid channel password")
 
     def _on_noflood(self, _, data):
-        self.logger.error('noflood: %r', data)
+        self.logger.error("noflood: %r", data)
 
     def _on_errorMsg(self, _, data):
-        self.logger.error('error: %r', data)
+        self.logger.error("error: %r", data)
 
     def _on_queueFail(self, _, data):
-        self.logger.error('playlist error: %r', data)
+        self.logger.error("playlist error: %r", data)
 
     @staticmethod
     def _on_kick(_, data):
         raise Kicked(data)
 
     def _add_user(self, data):
-        if data['name'] == self.user.name:
+        if data["name"] == self.user.name:
             self.user.update(**data)
             self.channel.userlist.add(self.user)
         else:
@@ -192,15 +202,15 @@ class Bot:
         self.channel.userlist.clear()
         for user in data:
             self._add_user(user)
-        self.logger.info('userlist: %s', self.channel.userlist)
+        self.logger.info("userlist: %s", self.channel.userlist)
 
     def _on_addUser(self, _, data):
         self._add_user(data)
-        self.logger.info('userlist: %s', self.channel.userlist)
+        self.logger.info("userlist: %s", self.channel.userlist)
 
         # Track user join in database
         if self.db:
-            username = data.get('name')
+            username = data.get("name")
             if username:
                 self.db.user_joined(username)
                 # Update high water mark
@@ -209,7 +219,7 @@ class Bot:
                 self.db.update_high_water_mark(user_count, connected_count)
 
     def _on_userLeave(self, _, data):
-        user = data['name']
+        user = data["name"]
 
         # Track user leave in database
         if self.db and user:
@@ -218,99 +228,94 @@ class Bot:
         try:
             del self.channel.userlist[user]
         except KeyError:
-            self.logger.error('userLeave: %s not found', user)
-        self.logger.info('userlist: %s', self.channel.userlist)
+            self.logger.error("userLeave: %s not found", user)
+        self.logger.info("userlist: %s", self.channel.userlist)
 
     def _on_setUserMeta(self, _, data):
         # Check if user exists before updating metadata
-        user_name = data.get('name', '')
+        user_name = data.get("name", "")
         # Ignore blank usernames (server sometimes sends these)
         if not user_name:
             return
         if user_name in self.channel.userlist:
-            self.channel.userlist[user_name].meta = data['meta']
+            self.channel.userlist[user_name].meta = data["meta"]
         else:
-            self.logger.warning(
-                'setUserMeta: user %s not in userlist yet', user_name)
+            self.logger.warning("setUserMeta: user %s not in userlist yet", user_name)
 
     def _on_setUserRank(self, _, data):
         # Check if user exists before updating rank
-        user_name = data.get('name', '')
+        user_name = data.get("name", "")
         # Ignore blank usernames (server sometimes sends these)
         if not user_name:
             return
         if user_name in self.channel.userlist:
-            self.channel.userlist[user_name].rank = data['rank']
+            self.channel.userlist[user_name].rank = data["rank"]
         else:
-            self.logger.warning(
-                'setUserRank: user %s not in userlist yet', user_name)
+            self.logger.warning("setUserRank: user %s not in userlist yet", user_name)
 
     def _on_setAFK(self, _, data):
         # Check if user exists before updating AFK status
-        user_name = data.get('name', '')
+        user_name = data.get("name", "")
         # Ignore blank usernames (server sometimes sends these)
         if not user_name:
             return
         if user_name in self.channel.userlist:
-            self.channel.userlist[user_name].afk = data['afk']
+            self.channel.userlist[user_name].afk = data["afk"]
         else:
-            self.logger.warning(
-                'setAFK: user %s not in userlist yet', user_name)
+            self.logger.warning("setAFK: user %s not in userlist yet", user_name)
 
     def _on_setLeader(self, _, data):
         self.channel.userlist.leader = data
-        self.logger.info('leader %r', self.channel.userlist.leader)
+        self.logger.info("leader %r", self.channel.userlist.leader)
 
     def _on_setPlaylistMeta(self, _, data):
-        self.channel.playlist.time = data.get('rawTime', 0)
+        self.channel.playlist.time = data.get("rawTime", 0)
 
     def _on_mediaUpdate(self, _, data):
-        self.channel.playlist.paused = data.get('paused', True)
-        self.channel.playlist.current_time = data.get('currentTime', 0)
+        self.channel.playlist.paused = data.get("paused", True)
+        self.channel.playlist.current_time = data.get("currentTime", 0)
 
     def _on_voteskip(self, _, data):
-        self.channel.voteskip_count = data.get('count', 0)
-        self.channel.voteskip_need = data.get('need', 0)
+        self.channel.voteskip_count = data.get("count", 0)
+        self.channel.voteskip_need = data.get("need", 0)
         self.logger.info(
-            'voteskip %s / %s',
-            self.channel.voteskip_count,
-            self.channel.voteskip_need
+            "voteskip %s / %s", self.channel.voteskip_count, self.channel.voteskip_need
         )
 
     def _on_setCurrent(self, _, data):
         self.channel.playlist.current = data
-        self.logger.info('setCurrent %s', self.channel.playlist.current)
+        self.logger.info("setCurrent %s", self.channel.playlist.current)
 
     def _on_queue(self, _, data):
-        self.channel.playlist.add(data['after'], data['item'])
-        self.logger.info('queue %s', self.channel.playlist.queue)
+        self.channel.playlist.add(data["after"], data["item"])
+        self.logger.info("queue %s", self.channel.playlist.queue)
 
     def _on_delete(self, _, data):
-        self.channel.playlist.remove(data['uid'])
-        self.logger.info('delete %s', self.channel.playlist.queue)
+        self.channel.playlist.remove(data["uid"])
+        self.logger.info("delete %s", self.channel.playlist.queue)
 
     def _on_setTemp(self, _, data):
-        self.channel.playlist.get(data['uid']).temp = data['temp']
+        self.channel.playlist.get(data["uid"]).temp = data["temp"]
 
     def _on_moveVideo(self, _, data):
-        self.channel.playlist.move(data['from'], data['after'])
-        self.logger.info('move %s', self.channel.playlist.queue)
+        self.channel.playlist.move(data["from"], data["after"])
+        self.logger.info("move %s", self.channel.playlist.queue)
 
     def _on_playlist(self, _, data):
         self.channel.playlist.clear()
         for item in data:
             self.channel.playlist.add(None, item)
-        self.logger.info('playlist %s', self.channel.playlist.queue)
+        self.logger.info("playlist %s", self.channel.playlist.queue)
 
     def _on_setPlaylistLocked(self, _, data):
         self.channel.playlist.locked = data
-        self.logger.info('playlist locked %s', data)
+        self.logger.info("playlist locked %s", data)
 
     def _on_chatMsg(self, _, data):
         """Track chat messages in database"""
         if self.db:
-            username = data.get('username')
-            msg = data.get('msg', '')
+            username = data.get("username")
+            msg = data.get("msg", "")
             if username:
                 # Store message text for recent chat display
                 self.db.user_chat_message(username, msg)
@@ -322,14 +327,11 @@ class Bot:
         ------
         cytube_bot.error.SocketConfigError
         """
-        data = {
-            'domain': self.domain,
-            'channel': self.channel.name
-        }
+        data = {"domain": self.domain, "channel": self.channel.name}
         url = self.SOCKET_CONFIG_URL % data
-        if not url.startswith('http'):
-            url = 'https://' + url
-        self.logger.info('get_socket_config %s', url)
+        if not url.startswith("http"):
+            url = "https://" + url
+        self.logger.info("get_socket_config %s", url)
         try:
             conf = await self.get(url)
         except (CytubeError, asyncio.CancelledError):
@@ -338,37 +340,32 @@ class Bot:
             raise SocketIOError(ex)
         conf = json.loads(conf)
         self.logger.info(conf)
-        if 'error' in conf:
-            raise SocketConfigError(conf['error'])
+        if "error" in conf:
+            raise SocketConfigError(conf["error"])
         try:
-            server = next(
-                srv['url']
-                for srv in conf['servers']
-                if srv['secure']
-            )
-            self.logger.info('secure server %s', server)
+            server = next(srv["url"] for srv in conf["servers"] if srv["secure"])
+            self.logger.info("secure server %s", server)
         except (KeyError, StopIteration):
-            self.logger.info('no secure servers')
+            self.logger.info("no secure servers")
             try:
-                server = next(srv['url'] for srv in conf['servers'])
-                self.logger.info('server %s', server)
+                server = next(srv["url"] for srv in conf["servers"])
+                self.logger.info("server %s", server)
             except (KeyError, StopIteration):
-                self.logger.info('no servers')
-                raise SocketConfigError('no servers in socket config', conf)
-        data['domain'] = server
+                self.logger.info("no servers")
+                raise SocketConfigError("no servers in socket config", conf)
+        data["domain"] = server
         self.server = self.SOCKET_IO_URL % data
 
     async def disconnect(self):
-        """Disconnect.
-        """
-        self.logger.info('disconnect %s', self.server)
+        """Disconnect."""
+        self.logger.info("disconnect %s", self.server)
         if self.socket is None:
-            self.logger.info('already disconnected')
+            self.logger.info("already disconnected")
             return
         try:
             await self.socket.close()
         except Exception as ex:
-            self.logger.error('socket.close(): %s: %r', self.server, ex)
+            self.logger.error("socket.close(): %s: %r", self.server, ex)
             raise
         finally:
             self.socket = None
@@ -382,10 +379,11 @@ class Bot:
         `cytube_bot.error.SocketIOError`
         """
         import time
+
         await self.disconnect()
         if self.server is None:
             await self.get_socket_config()
-        self.logger.info('connect %s', self.server)
+        self.logger.info("connect %s", self.server)
         self.socket = await self.socket_io(self.server, loop=asyncio.get_running_loop())
         self.connect_time = time.time()  # Record connection time
 
@@ -399,54 +397,48 @@ class Bot:
         """
         await self.connect()
 
-        self.logger.info('join channel %s', self.channel)
+        self.logger.info("join channel %s", self.channel)
         res = await self.socket.emit(
-            'joinChannel',
-            {
-                'name': self.channel.name,
-                'pw': self.channel.password
-            },
-            SocketIOResponse.match_event(r'^(needPassword|)$'),
-            self.response_timeout
+            "joinChannel",
+            {"name": self.channel.name, "pw": self.channel.password},
+            SocketIOResponse.match_event(r"^(needPassword|)$"),
+            self.response_timeout,
         )
         if res is None:
-            raise SocketIOError('joinChannel response timeout')
-        if res[0] == 'needPassword':
-            raise LoginError('invalid channel password')
+            raise SocketIOError("joinChannel response timeout")
+        if res[0] == "needPassword":
+            raise LoginError("invalid channel password")
 
         if not self.user.name:
-            self.logger.warning('no user')
+            self.logger.warning("no user")
         else:
             while True:
-                self.logger.info('login %s', self.user)
+                self.logger.info("login %s", self.user)
                 res = await self.socket.emit(
-                    'login',
-                    {
-                        'name': self.user.name,
-                        'pw': self.user.password
-                    },
-                    SocketIOResponse.match_event(r'^login$'),
-                    self.response_timeout
+                    "login",
+                    {"name": self.user.name, "pw": self.user.password},
+                    SocketIOResponse.match_event(r"^login$"),
+                    self.response_timeout,
                 )
                 if res is None:
-                    raise SocketIOError('login response timeout')
+                    raise SocketIOError("login response timeout")
                 res = res[1]
-                self.logger.info('login %s', res)
-                if res.get('success', False):
+                self.logger.info("login %s", res)
+                if res.get("success", False):
                     break
-                err = res.get('error', '<no error message>')
-                self.logger.error('login error: %s', res)
+                err = res.get("error", "<no error message>")
+                self.logger.error("login error: %s", res)
                 match = self.GUEST_LOGIN_LIMIT.match(err)
                 if match:
                     try:
                         delay = max(int(match.group(1)), 1)
-                        self.logger.warning('sleep(%d)', delay)
+                        self.logger.warning("sleep(%d)", delay)
                         await asyncio.sleep(delay)
                     except ValueError:
                         raise LoginError(err)
                 else:
                     raise LoginError(err)
-        await self.trigger('login', self)
+        await self.trigger("login", self)
 
     async def _log_user_counts_periodically(self):
         """Background task to periodically log user counts for graphing
@@ -464,13 +456,14 @@ class Bot:
                     try:
                         self.db.log_user_count(chat_users, connected_users)
                         self.logger.debug(
-                            'Logged user counts: %d chat, %d connected',
-                            chat_users, connected_users
+                            "Logged user counts: %d chat, %d connected",
+                            chat_users,
+                            connected_users,
                         )
                     except Exception as e:
-                        self.logger.error('Failed to log user counts: %s', e)
+                        self.logger.error("Failed to log user counts: %s", e)
         except asyncio.CancelledError:
-            self.logger.debug('User count logging task cancelled')
+            self.logger.debug("User count logging task cancelled")
 
     async def _update_current_status_periodically(self):
         """Background task to update current status for web display
@@ -484,35 +477,36 @@ class Bot:
                 if self.db and self.channel:
                     try:
                         status = {
-                            'bot_name': self.user.name,
-                            'bot_rank': self.user.rank,
-                            'bot_afk': 1 if self.user.afk else 0,
-                            'channel_name': self.channel.name,
-                            'current_chat_users': len(self.channel.userlist),
-                            'current_connected_users': (
-                                self.channel.userlist.count or
-                                len(self.channel.userlist)
+                            "bot_name": self.user.name,
+                            "bot_rank": self.user.rank,
+                            "bot_afk": 1 if self.user.afk else 0,
+                            "channel_name": self.channel.name,
+                            "current_chat_users": len(self.channel.userlist),
+                            "current_connected_users": (
+                                self.channel.userlist.count
+                                or len(self.channel.userlist)
                             ),
-                            'bot_start_time': int(self.start_time),
-                            'bot_connected': 1 if self.socket else 0
+                            "bot_start_time": int(self.start_time),
+                            "bot_connected": 1 if self.socket else 0,
                         }
 
                         # Add playlist info if available
                         if self.channel.playlist:
-                            status['playlist_items'] = len(
-                                self.channel.playlist.queue)
+                            status["playlist_items"] = len(self.channel.playlist.queue)
                             if self.channel.playlist.current:
-                                status['current_media_title'] = (
-                                    self.channel.playlist.current.title)
-                                status['current_media_duration'] = (
-                                    self.channel.playlist.current.duration)
+                                status[
+                                    "current_media_title"
+                                ] = self.channel.playlist.current.title
+                                status[
+                                    "current_media_duration"
+                                ] = self.channel.playlist.current.duration
 
                         self.db.update_current_status(**status)
-                        self.logger.debug('Updated current status')
+                        self.logger.debug("Updated current status")
                     except Exception as e:
-                        self.logger.error('Failed to update status: %s', e)
+                        self.logger.error("Failed to update status: %s", e)
         except asyncio.CancelledError:
-            self.logger.debug('Status update task cancelled')
+            self.logger.debug("Status update task cancelled")
 
     async def _process_outbound_messages_periodically(self):
         """Background task to send outbound messages queued by web UI.
@@ -531,33 +525,30 @@ class Bot:
                     continue
                 if not self.socket:
                     self.logger.debug(
-                        'Outbound processor waiting for socket connection'
+                        "Outbound processor waiting for socket connection"
                     )
                     continue
                 if not self.channel.permissions:
                     self.logger.debug(
-                        'Outbound processor waiting for channel '
-                        'permissions to load'
+                        "Outbound processor waiting for channel " "permissions to load"
                     )
                     continue
 
                 try:
                     # Fetch messages ready for sending (respects retry backoff)
                     messages = self.db.get_unsent_outbound_messages(
-                        limit=20,
-                        max_retries=3
+                        limit=20, max_retries=3
                     )
 
                     if messages:
                         self.logger.debug(
-                            'Processing %d queued outbound message(s)',
-                            len(messages)
+                            "Processing %d queued outbound message(s)", len(messages)
                         )
 
                     for m in messages:
-                        mid = m['id']
-                        text = m['message']
-                        retry_count = m.get('retry_count', 0)
+                        mid = m["id"]
+                        text = m["message"]
+                        retry_count = m.get("retry_count", 0)
 
                         try:
                             await self.chat(text)
@@ -565,53 +556,48 @@ class Bot:
 
                             if retry_count > 0:
                                 self.logger.info(
-                                    'Sent outbound id=%s after %d retries',
-                                    mid, retry_count
+                                    "Sent outbound id=%s after %d retries",
+                                    mid,
+                                    retry_count,
                                 )
                             else:
-                                self.logger.info('Sent outbound id=%s', mid)
+                                self.logger.info("Sent outbound id=%s", mid)
 
                         except Exception as send_exc:
-                            from .error import (
-                                ChannelPermissionError,
-                                ChannelError
-                            )
+                            from .error import ChannelError, ChannelPermissionError
 
                             error_msg = str(send_exc)
 
                             # Classify error as permanent or transient
-                            if isinstance(send_exc, (
-                                    ChannelPermissionError,
-                                    ChannelError)):
+                            if isinstance(
+                                send_exc, (ChannelPermissionError, ChannelError)
+                            ):
                                 # Permanent: permissions, muted, flood control
                                 self.db.mark_outbound_failed(
-                                    mid,
-                                    error_msg,
-                                    is_permanent=True
+                                    mid, error_msg, is_permanent=True
                                 )
                                 self.logger.error(
-                                    'Permanent failure for outbound id=%s: %s',
-                                    mid, error_msg
+                                    "Permanent failure for outbound id=%s: %s",
+                                    mid,
+                                    error_msg,
                                 )
                             else:
                                 # Transient: network, timeout, etc - will retry
                                 self.db.mark_outbound_failed(
-                                    mid,
-                                    error_msg,
-                                    is_permanent=False
+                                    mid, error_msg, is_permanent=False
                                 )
                                 self.logger.warning(
-                                    'Transient failure for outbound id=%s '
-                                    '(retry %d): %s',
-                                    mid, retry_count + 1, error_msg
+                                    "Transient failure for outbound id=%s "
+                                    "(retry %d): %s",
+                                    mid,
+                                    retry_count + 1,
+                                    error_msg,
                                 )
 
                 except Exception as e:
-                    self.logger.error(
-                        'Error processing outbound messages: %s', e
-                    )
+                    self.logger.error("Error processing outbound messages: %s", e)
         except asyncio.CancelledError:
-            self.logger.debug('Outbound processing task cancelled')
+            self.logger.debug("Outbound processing task cancelled")
 
     async def _perform_maintenance_periodically(self):
         """Background task for periodic database maintenance.
@@ -626,26 +612,22 @@ class Bot:
                 # Run immediately on startup, then every 24 hours
                 if self.db:
                     try:
-                        self.logger.info('Starting database maintenance...')
+                        self.logger.info("Starting database maintenance...")
                         maintenance_log = self.db.perform_maintenance()
                         self.logger.info(
-                            'Maintenance complete: %s',
-                            ', '.join(maintenance_log)
+                            "Maintenance complete: %s", ", ".join(maintenance_log)
                         )
                     except Exception as e:
-                        self.logger.error(
-                            'Database maintenance failed: %s', e
-                        )
+                        self.logger.error("Database maintenance failed: %s", e)
 
                 # Wait 24 hours before next maintenance
                 await asyncio.sleep(86400)
 
         except asyncio.CancelledError:
-            self.logger.debug('Maintenance task cancelled')
+            self.logger.debug("Maintenance task cancelled")
 
     async def run(self):
-        """Main loop.
-        """
+        """Main loop."""
         try:
             # Start background tasks for logging and status updates
             if self.db:
@@ -665,19 +647,19 @@ class Bot:
             while True:
                 try:
                     if self.socket is None:
-                        self.logger.info('login')
+                        self.logger.info("login")
                         await self.login()
                     ev, data = await self.socket.recv()
                     await self.trigger(ev, data)
                 except SocketIOError as ex:
-                    self.logger.error('network error: %r', ex)
+                    self.logger.error("network error: %r", ex)
                     await self.disconnect()
                     if self.restart_delay is None or self.restart_delay < 0:
                         break
-                    self.logger.error('restarting')
+                    self.logger.error("restarting")
                     await asyncio.sleep(self.restart_delay)
         except asyncio.CancelledError:
-            self.logger.info('cancelled')
+            self.logger.info("cancelled")
         finally:
             # Cancel background tasks
             if self._history_task:
@@ -724,9 +706,9 @@ class Bot:
         for handler in handlers:
             if handler not in ev_handlers:
                 ev_handlers.append(handler)
-                self.logger.info('on: %s %s', event, handler)
+                self.logger.info("on: %s %s", event, handler)
             else:
-                self.logger.warning('on: handler exists: %s %s', event, handler)
+                self.logger.warning("on: handler exists: %s %s", event, handler)
         return self
 
     def off(self, event, *handlers):
@@ -743,12 +725,9 @@ class Bot:
         for handler in handlers:
             try:
                 ev_handlers.remove(handler)
-                self.logger.info('off: %s %s', event, handler)
+                self.logger.info("off: %s %s", event, handler)
             except ValueError:
-                self.logger.warning(
-                    'off: handler not found: %s %s',
-                    event, handler
-                )
+                self.logger.warning("off: handler not found: %s %s", event, handler)
         return self
 
     async def trigger(self, event, data):
@@ -767,7 +746,7 @@ class Bot:
         `cytube_bot.error.Kicked`
         """
         level = self.EVENT_LOG_LEVEL.get(event, self.EVENT_LOG_LEVEL_DEFAULT)
-        self.logger.log(level, 'trigger: %s %s', event, data)
+        self.logger.log(level, "trigger: %s %s", event, data)
         try:
             for handler in self.handlers[event]:
                 if asyncio.iscoroutinefunction(handler):
@@ -779,13 +758,9 @@ class Bot:
         except (asyncio.CancelledError, LoginError, Kicked):
             raise
         except Exception as ex:  # pylint: disable=broad-except
-            self.logger.error('trigger %s %s: %r', event, data, ex)
-            if event != 'error':
-                await self.trigger('error', {
-                    'event': event,
-                    'data': data,
-                    'error': ex
-                })
+            self.logger.error("trigger %s %s: %r", event, data, ex)
+            if event != "error":
+                await self.trigger("error", {"event": event, "data": data, "error": ex})
 
     async def chat(self, msg, meta=None):
         """Send a chat message.
@@ -807,30 +782,30 @@ class Bot:
         """
 
         def match_chat_response(event, data):
-            if event == 'noflood':
+            if event == "noflood":
                 return True
-            if event == 'chatMsg':
-                return data.get('username') == self.user.name
+            if event == "chatMsg":
+                return data.get("username") == self.user.name
             return False
 
-        self.logger.info('chat %s', msg)
-        self.channel.check_permission('chat', self.user)
+        self.logger.info("chat %s", msg)
+        self.channel.check_permission("chat", self.user)
 
         if self.user.muted or self.user.smuted:
-            raise ChannelPermissionError('muted')
+            raise ChannelPermissionError("muted")
 
         res = await self.socket.emit(
-            'chatMsg',
-            {'msg': msg, 'meta': meta if meta else {}},
+            "chatMsg",
+            {"msg": msg, "meta": meta if meta else {}},
             match_chat_response,
-            self.response_timeout
+            self.response_timeout,
         )
         if res is None:
-            self.logger.error('chat: timeout')
-            raise ChannelError('could not send chat message')
-        if res[0] == 'noflood':
-            self.logger.error('chat: noflood: %s', res)
-            raise ChannelPermissionError(res[1].get('msg', 'noflood'))
+            self.logger.error("chat: timeout")
+            raise ChannelError("could not send chat message")
+        if res[0] == "noflood":
+            self.logger.error("chat: noflood: %s", res)
+            raise ChannelPermissionError(res[1].get("msg", "noflood"))
             # if self.MUTED.match(res['msg']):
             #     raise ChannelPermissionError('muted')
         return res[1]
@@ -856,31 +831,30 @@ class Bot:
         """
 
         def match_pm_response(event, data):
-            if event == 'errorMsg':
+            if event == "errorMsg":
                 return True
-            if event == 'pm':
-                return (data.get('username') == self.user.name
-                        and data.get('to') == to)
+            if event == "pm":
+                return data.get("username") == self.user.name and data.get("to") == to
             return False
 
-        self.logger.info('pm %s %s', to, msg)
-        self.channel.check_permission('chat', self.user)
+        self.logger.info("pm %s %s", to, msg)
+        self.channel.check_permission("chat", self.user)
 
         if self.user.muted or self.user.smuted:
-            raise ChannelPermissionError('muted')
+            raise ChannelPermissionError("muted")
 
         res = await self.socket.emit(
-            'pm',
-            {'msg': msg, 'to': to, 'meta': meta if meta else {}},
+            "pm",
+            {"msg": msg, "to": to, "meta": meta if meta else {}},
             match_pm_response,
-            self.response_timeout
+            self.response_timeout,
         )
         if res is None:
-            self.logger.error('pm: %s: timeout', to)
-            raise ChannelError('could not send private message')
-        if res[0] == 'errorMsg':
-            self.logger.error('pm: %r', res)
-            raise ChannelError(res[1].get('msg', '<no message>'))
+            self.logger.error("pm: %s: timeout", to)
+            raise ChannelError("could not send private message")
+        if res[0] == "errorMsg":
+            self.logger.error("pm: %r", res)
+            raise ChannelError(res[1].get("msg", "<no message>"))
         return res[1]
 
     async def set_afk(self, value=True):
@@ -895,7 +869,7 @@ class Bot:
         cytube_bot.error.ChannelPermissionError
         """
         if self.user.afk != value:
-            await self.socket.emit('chatMsg', {'msg': '/afk'})
+            await self.socket.emit("chatMsg", {"msg": "/afk"})
 
     async def clear_chat(self):
         """Clear chat.
@@ -904,10 +878,10 @@ class Bot:
         ------
         cytube_bot.error.ChannelPermissionError
         """
-        self.channel.check_permission('chatclear', self.user)
-        await self.socket.emit('chatMsg', {'msg': '/clear'})
+        self.channel.check_permission("chatclear", self.user)
+        await self.socket.emit("chatMsg", {"msg": "/clear"})
 
-    async def kick(self, user, reason=''):
+    async def kick(self, user, reason=""):
         """Kick a user.
 
         Parameters
@@ -921,33 +895,34 @@ class Bot:
         cytube_bot.error.ChannelPermissionError
         ValueError
         """
+
         def match_kick_response(event, data):
-            if event == 'errorMsg':
+            if event == "errorMsg":
                 return True
-            if event == 'userLeave':
-                return data.get('name') == user
+            if event == "userLeave":
+                return data.get("name") == user
             return False
 
-        self.channel.check_permission('kick', self.user)
+        self.channel.check_permission("kick", self.user)
         if not isinstance(user, User):
             user = self.channel.userlist.get(user)
         if self.user.rank <= user.rank:
             raise ChannelPermissionError(
-                'You do not have permission to kick ' + user.name
+                "You do not have permission to kick " + user.name
             )
         res = await self.socket.emit(
-            'chatMsg',
+            "chatMsg",
             {
-                'msg': '/kick %s %s' % (user.name, reason),
-                'meta': {},
+                "msg": "/kick %s %s" % (user.name, reason),
+                "meta": {},
             },
             match_kick_response,
-            self.response_timeout
+            self.response_timeout,
         )
         if res is None:
-            raise ChannelError('kick response timeout')
-        if res[0] == 'errorMsg':
-            raise ChannelPermissionError(res[1].get('msg', '<no message>'))
+            raise ChannelError("kick response timeout")
+        if res[0] == "errorMsg":
+            raise ChannelPermissionError(res[1].get("msg", "<no message>"))
 
     async def add_media(self, link, append=True, temp=True):
         """Add media link to playlist.
@@ -974,46 +949,46 @@ class Bot:
         """
 
         def match_add_media_response(event, data):
-            if event == 'queueFail':
+            if event == "queueFail":
                 return True
-            if event == 'queue':
-                item = data.get('item', {})
-                media = item.get('media', {})
+            if event == "queue":
+                item = data.get("item", {})
+                media = item.get("media", {})
                 return (
-                    item.get('queueby') == self.user.name
-                    and media.get('type') == link.type
-                    and media.get('id') == link.id
+                    item.get("queueby") == self.user.name
+                    and media.get("type") == link.type
+                    and media.get("id") == link.id
                 )
             return False
 
-        action = 'playlist' if self.channel.playlist.locked else 'oplaylist'
-        self.logger.info('add media %s', link)
-        self.channel.check_permission(action + 'add', self.user)
+        action = "playlist" if self.channel.playlist.locked else "oplaylist"
+        self.logger.info("add media %s", link)
+        self.channel.check_permission(action + "add", self.user)
         if not append:
-            self.channel.check_permission(action + 'next', self.user)
+            self.channel.check_permission(action + "next", self.user)
         if not temp:
-            self.channel.check_permission('addnontemp', self.user)
+            self.channel.check_permission("addnontemp", self.user)
 
         if not isinstance(link, MediaLink):
             link = MediaLink.from_url(link)
 
         res = await self.socket.emit(
-            'queue',
+            "queue",
             {
-                'type': link.type,
-                'id': link.id,
-                'pos': 'end' if append else 'next',
-                'temp': temp
+                "type": link.type,
+                "id": link.id,
+                "pos": "end" if append else "next",
+                "temp": temp,
             },
             match_add_media_response,
-            self.response_timeout
+            self.response_timeout,
         )
 
         if res is None:
-            raise ChannelError('add media response timeout')
-        if res[0] == 'queueFail':
-            self.logger.info('queueFail %r', res)
-            raise ChannelError(res[1].get('msg', '<no message>'))
+            raise ChannelError("add media response timeout")
+        if res[0] == "queueFail":
+            self.logger.info("queueFail %r", res)
+            raise ChannelError(res[1].get("msg", "<no message>"))
         return res[1]
 
     async def remove_media(self, item):
@@ -1031,25 +1006,22 @@ class Bot:
         """
 
         def match_remove_media_response(event, data):
-            if event == 'delete':
-                return data.get('uid') == item.uid
+            if event == "delete":
+                return data.get("uid") == item.uid
             return False
 
         if self.channel.playlist.locked:
-            action = 'playlistdelete'
+            action = "playlistdelete"
         else:
-            action = 'oplaylistdelete'
+            action = "oplaylistdelete"
         self.channel.check_permission(action, self.user)
         if not isinstance(item, PlaylistItem):
             item = self.channel.playlist.get(item)
         res = await self.socket.emit(
-            'delete',
-            item.uid,
-            match_remove_media_response,
-            self.response_timeout
+            "delete", item.uid, match_remove_media_response, self.response_timeout
         )
         if res is None:
-            raise ChannelError('remove media response timeout')
+            raise ChannelError("remove media response timeout")
 
     async def move_media(self, item, after):
         """Move a playlist item.
@@ -1065,18 +1037,16 @@ class Bot:
         cytube_bot.error.ChannelPermissionError
         ValueError
         """
+
         def match_remove_media_response(event, data):
-            if event == 'moveVideo':
-                return (
-                    data.get('from') == item.uid
-                    and data.get('after') == after.uid
-                )
+            if event == "moveVideo":
+                return data.get("from") == item.uid and data.get("after") == after.uid
             return False
 
         if self.channel.playlist.locked:
-            action = 'playlistmove'
+            action = "playlistmove"
         else:
-            action = 'oplaylistmove'
+            action = "oplaylistmove"
         self.channel.check_permission(action, self.user)
 
         if not isinstance(item, PlaylistItem):
@@ -1085,16 +1055,13 @@ class Bot:
             after = self.channel.playlist.get(after)
 
         res = await self.socket.emit(
-            'moveMedia',
-            {
-                'from': item.uid,
-                'after': after.uid
-            },
+            "moveMedia",
+            {"from": item.uid, "after": after.uid},
             match_remove_media_response,
-            self.response_timeout
+            self.response_timeout,
         )
         if res is None:
-            raise ChannelError('move media response timeout')
+            raise ChannelError("move media response timeout")
 
     async def set_current_media(self, item):
         """Set current playlist item.
@@ -1109,26 +1076,24 @@ class Bot:
         cytube_bot.error.ChannelPermissionError
         ValueError
         """
+
         def match_set_current_response(event, data):
-            if event == 'setCurrent':
+            if event == "setCurrent":
                 return data == item.uid
             return False
 
         if self.channel.playlist.locked:
-            action = 'playlistjump'
+            action = "playlistjump"
         else:
-            action = 'oplaylistjump'
+            action = "oplaylistjump"
         self.channel.check_permission(action, self.user)
         if not isinstance(item, PlaylistItem):
             item = self.channel.playlist.get(item)
         res = await self.socket.emit(
-            'jumpTo',
-            item.uid,
-            match_set_current_response,
-            self.response_timeout
+            "jumpTo", item.uid, match_set_current_response, self.response_timeout
         )
         if res is None:
-            raise ChannelError('set current response timeout')
+            raise ChannelError("set current response timeout")
 
     async def set_leader(self, user):
         """Set leader.
@@ -1143,25 +1108,26 @@ class Bot:
         cytube_bot.error.ChannelError
         ValueError
         """
+
         def match_set_leader_response(event, data):
-            if event == 'setLeader':
+            if event == "setLeader":
                 if user is None:
-                    return data == ''
+                    return data == ""
                 else:
                     return data == user.name
             return False
 
-        self.channel.check_permission('leaderctl', self.user)
+        self.channel.check_permission("leaderctl", self.user)
         if user is not None and not isinstance(user, User):
             user = self.channel.userlist.get(user)
         res = await self.socket.emit(
-            'assignLeader',
-            {'name': user.name if user is not None else ''},
+            "assignLeader",
+            {"name": user.name if user is not None else ""},
             match_set_leader_response,
-            self.response_timeout
+            self.response_timeout,
         )
         if res is None:
-            raise ChannelError('set leader response timeout')
+            raise ChannelError("set leader response timeout")
 
     async def remove_leader(self):
         """Remove leader."""
@@ -1175,14 +1141,17 @@ class Bot:
         cytube_bot.error.ChannelPermissionError
         """
         if self.channel.userlist.leader is not self.user:
-            raise ChannelPermissionError('can not pause: not a leader')
+            raise ChannelPermissionError("can not pause: not a leader")
 
         if self.channel.playlist.current is None:
             return
 
-        await self.socket.emit('mediaUpdate', {
-            'currentTime': self.channel.playlist.current_time,
-            'paused': True,
-            'id': self.channel.playlist.current.link.id,
-            'type': self.channel.playlist.current.link.type
-        })
+        await self.socket.emit(
+            "mediaUpdate",
+            {
+                "currentTime": self.channel.playlist.current_time,
+                "paused": True,
+                "id": self.channel.playlist.current.link.id,
+                "type": self.channel.playlist.current.link.type,
+            },
+        )

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Entry point for Juiced - CyTube TUI Chat Client."""
 
-import sys
 import asyncio
+import sys
 from pathlib import Path
 
 from juiced import TUIBot
@@ -24,9 +24,9 @@ def main():
         print("")
         print("For more info, see README.md")
         sys.exit(1)
-    
+
     config_file = sys.argv[1]
-    
+
     # Load configuration (get_config reads from sys.argv directly)
     try:
         config, kwargs = get_config()
@@ -36,13 +36,13 @@ def main():
         print("Make sure your config file exists and is valid YAML or JSON.")
         print("See configs/config.yaml.example for a template.")
         sys.exit(1)
-    
+
     # Extract TUI-specific config
-    tui_config = config.pop('tui', {})
-    
+    tui_config = config.pop("tui", {})
+
     # Create and run bot
     bot = TUIBot(tui_config=tui_config, config_file=config_file, **kwargs)
-    
+
     try:
         asyncio.run(bot.run_tui())
     except KeyboardInterrupt:
@@ -50,9 +50,10 @@ def main():
     except Exception as e:
         print(f"\nFatal error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

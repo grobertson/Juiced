@@ -1,38 +1,40 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
-import socket
 import logging
+import socket
+import sys
 
 # Removed Socks5 support for simplicity, pysocks had resolution issues
 HAS_PYSOCKS = False
 SOCKS5 = None
 
+
 class ProxyError(Exception):
     pass
 
-class socksocket: # pylint: disable=invalid-name,too-few-public-methods
+
+class socksocket:  # pylint: disable=invalid-name,too-few-public-methods
     def __init__(self, *args, **kwargs):
-        raise ProxyConfigError('pysocks is not installed')
+        raise ProxyConfigError("pysocks is not installed")
 
 
 from .error import ProxyConfigError
 
-
-logger = logging.getLogger('socks.getaddrinfo')
+logger = logging.getLogger("socks.getaddrinfo")
 _orig_getaddrinfo = socket.getaddrinfo
 
 
 class Socket(socksocket):
     """SOCKS enabled socket (no proxy for localhost)."""
 
-    def __init__(self,
-                 family=socket.AddressFamily.AF_INET,
-                 type=socket.SOCK_STREAM,
-                 proto=0,
-                 fileno=None):
-        if type not in (socket.SOCK_STREAM,
-                        socket.SOCK_DGRAM):
+    def __init__(
+        self,
+        family=socket.AddressFamily.AF_INET,
+        type=socket.SOCK_STREAM,
+        proto=0,
+        fileno=None,
+    ):
+        if type not in (socket.SOCK_STREAM, socket.SOCK_DGRAM):
             type = socket.SOCK_STREAM
         super().__init__(family, type, proto, fileno)
 
@@ -43,9 +45,9 @@ class Socket(socksocket):
         ----------
         host : `str`
         """
-        logger.debug('set_proxy_for_address %r', addr)
+        logger.debug("set_proxy_for_address %r", addr)
         host, _ = addr
-        if host in ('127.0.0.1', 'localhost'):
+        if host in ("127.0.0.1", "localhost"):
             self.set_proxy(None)
         else:
             self.proxy = self.default_proxy
@@ -67,24 +69,24 @@ class Socket(socksocket):
 def getaddrinfo(host, port, *args, **kwargs):
     proxy_type, _, _, rdns, _, _ = socks.get_default_proxy()
     if proxy_type is not None and rdns:
-        ret = [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (host, port))]
+        ret = [(socket.AF_INET, socket.SOCK_STREAM, 6, "", (host, port))]
     else:
         ret = _orig_getaddrinfo(host, port, *args, **kwargs)
-    logger.debug('%s:%s %s', host, port, ret)
+    logger.debug("%s:%s %s", host, port, ret)
     return ret
 
 
 def wrap_module(module):
-    logger.debug('wrap module %s', module)
+    logger.debug("wrap module %s", module)
 
     if not HAS_PYSOCKS:
-        raise ProxyConfigError('pysocks is not installed')
+        raise ProxyConfigError("pysocks is not installed")
 
     if socksocket.default_proxy:
         module.socket.socket = Socket
         module.socket.getaddrinfo = getaddrinfo
     else:
-        raise ProxyConfigError('no default proxy specified')
+        raise ProxyConfigError("no default proxy specified")
 
 
 def set_proxy(addr, port, proxy_type=SOCKS5, modules=None):
@@ -107,12 +109,9 @@ def set_proxy(addr, port, proxy_type=SOCKS5, modules=None):
         If pysocks is not installed.
     """
     if not HAS_PYSOCKS:
-        raise ProxyConfigError('pysocks is not installed')
+        raise ProxyConfigError("pysocks is not installed")
     socks.set_default_proxy(
-        proxy_type=proxy_type,
-        addr=addr,
-        port=port,
-        rdns=proxy_type == socks.SOCKS5
+        proxy_type=proxy_type, addr=addr, port=port, rdns=proxy_type == socks.SOCKS5
     )
     for module in modules or (sys.modules[__name__],):
         wrap_module(module)
