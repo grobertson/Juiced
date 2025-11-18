@@ -10,8 +10,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        # Quote versions to ensure YAML treats them as strings (prevents 3.10/3.11 being parsed as floats)
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+    # Quote versions to ensure YAML treats them as strings (prevents 3.10/3.11 being parsed as floats)
+    # Exclude 3.7: not available on newer hosted images (Ubuntu 24.04 / macOS runners)
+    python-version: ['3.8', '3.9', '3.10', '3.11']
     steps:
       - uses: actions/checkout@v4
 
