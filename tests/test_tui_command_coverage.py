@@ -23,6 +23,8 @@ class FakeTerm:
 
 
 # Centralized test fixture (tests/conftest.py) sets _TEST_LOG_DIR and patches TUI terminal.
+# Fallback for static analysis; conftest will override at runtime
+_TEST_LOG_DIR = None
 
 
 def make_bot():

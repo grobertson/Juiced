@@ -43,6 +43,9 @@ class FakeTerm:
 
 # Centralized fixture in `tests/conftest.py` provides Terminal/patching
 
+# Fallback for static analysis; conftest overrides at runtime
+_TEST_LOG_DIR = None
+
 
 def make_bot(width=60, height=20):
     import juiced.tui_bot as tui_mod

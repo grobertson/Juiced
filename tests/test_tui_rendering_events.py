@@ -23,6 +23,7 @@ class FakeTerm:
 
 # Centralized fixture in `tests/conftest.py` will set `_TEST_LOG_DIR` and
 # patch the TUI Terminal; per-module fixture removed to avoid duplication.
+_TEST_LOG_DIR = None
 
 
 def make_bot(config_file="cfg.json"):

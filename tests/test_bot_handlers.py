@@ -1,4 +1,3 @@
-
 import pytest
 
 from juiced.lib.bot import Bot

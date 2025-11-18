@@ -1824,7 +1824,7 @@ class TUIBot(Bot):
                             f"Found pending UID {self.pending_media_uid}: {item.title}",
                             color="bright_green",
                         )
-                    except:
+                    except Exception:
                         self.add_system_message(
                             f"Pending UID {self.pending_media_uid} NOT in queue",
                             color="bright_red",
