@@ -35,6 +35,8 @@ configs/*.json
 # Logs
 logs/*.log
 logs/chat_*.log
+# Test-run generated logs
+logs_test/
 
 # IDE
 .vscode/
