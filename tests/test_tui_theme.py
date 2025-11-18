@@ -53,15 +53,8 @@ def make_bot():
     )
 
 
-def test_list_and_load_themes(tmp_path, monkeypatch):
+def test_list_and_load_themes(themes_dir):
     bot = make_bot()
-    import juiced.tui_bot as tui_mod
-
-    base = tmp_path / "tui_module"
-    base.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
-    themes_dir = base / "themes"
-    themes_dir.mkdir(parents=True, exist_ok=True)
 
     # Create two themes
     t1 = themes_dir / "blue.json"
@@ -88,15 +81,8 @@ def test_list_and_load_themes(tmp_path, monkeypatch):
     assert "blue" in names and "simple" in names
 
 
-def test_change_theme_creates_config_when_missing(tmp_path, monkeypatch):
+def test_change_theme_creates_config_when_missing(tmp_path, themes_dir):
     bot = make_bot()
-    import juiced.tui_bot as tui_mod
-
-    base = tmp_path / "tui_module"
-    base.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
-    themes_dir = base / "themes"
-    themes_dir.mkdir(parents=True, exist_ok=True)
 
     theme_file = themes_dir / "mytheme.json"
     theme_file.write_text(
@@ -121,15 +107,8 @@ def test_change_theme_creates_config_when_missing(tmp_path, monkeypatch):
     assert loaded.get("tui", {}).get("theme") == "mytheme"
 
 
-def test_change_theme_rejects_missing_colors(tmp_path, monkeypatch):
+def test_change_theme_rejects_missing_colors(tmp_path, themes_dir):
     bot = make_bot()
-    import juiced.tui_bot as tui_mod
-
-    base = tmp_path / "tui_module"
-    base.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
-    themes_dir = base / "themes"
-    themes_dir.mkdir(parents=True, exist_ok=True)
 
     bad = themes_dir / "bad.json"
     bad.write_text(json.dumps({"name": "BadTheme"}))
@@ -146,16 +125,8 @@ def test_change_theme_rejects_missing_colors(tmp_path, monkeypatch):
     assert "tui" not in loaded or loaded.get("tui", {}).get("theme") != "bad"
 
 
-def test_load_theme_with_invalid_json_returns_fallback(tmp_path, monkeypatch):
+def test_load_theme_with_invalid_json_returns_fallback(tmp_path, themes_dir):
     bot = make_bot()
-    # write invalid theme file at absolute path
-    import juiced.tui_bot as tui_mod
-
-    base = tmp_path / "tui_module"
-    base.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setattr(tui_mod, "THEMES_BASE", base, raising=False)
-    themes_dir = base / "themes"
-    themes_dir.mkdir(parents=True, exist_ok=True)
 
     badfile = themes_dir / "broken.json"
     badfile.write_text("{ this is not: valid json")

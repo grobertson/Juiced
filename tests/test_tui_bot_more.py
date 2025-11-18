@@ -183,16 +183,11 @@ def test_handle_media_change_with_uid_and_playlist():
     assert bot.current_media_title == "UIDVideo"
 
 
-def test_load_theme_and_change_theme(tmp_path, monkeypatch):
+def test_load_theme_and_change_theme(tmp_path, monkeypatch, themes_dir):
     bot = make_bot()
     # avoid full screen render which expects a richer theme
     monkeypatch.setattr(type(bot), "render_screen", lambda self: None)
-    # create a themes dir next to module (or use THEMES_BASE if tests set it)
-    import juiced.tui_bot as tui_mod
-
-    base = Path(getattr(tui_mod, "THEMES_BASE", Path(__import__("juiced.tui_bot").__file__).parent))
-    themes_dir = base / "themes"
-    themes_dir.mkdir(parents=True, exist_ok=True)
+    themes_dir = themes_dir
 
     theme_file = themes_dir / "unittest_theme.json"
     theme_content = {

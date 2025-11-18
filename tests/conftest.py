@@ -71,3 +71,30 @@ def test_environment(monkeypatch, tmp_path, request):
         pass
 
     yield
+
+
+@pytest.fixture
+def themes_dir(monkeypatch, tmp_path):
+    """Create a temporary themes directory and point the module at it.
+
+    Tests that need to read/write theme JSON files should use this fixture.
+    It will create <tmp_path>/tui_module/themes and set
+    juiced.tui_bot.THEMES_BASE to the temporary module dir so lookups
+    like Path(__file__).parent / 'themes' resolve inside tmp_path.
+    """
+    try:
+        import juiced.tui_bot as tui_mod
+
+        module_dir = tmp_path / "tui_module"
+        module_dir.mkdir(parents=True, exist_ok=True)
+        # Set the module-level THEMES_BASE if present; raising=False so
+        # monkeypatch won't fail when attribute doesn't previously exist.
+        monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir, raising=False)
+        themes = module_dir / "themes"
+        themes.mkdir(parents=True, exist_ok=True)
+        return themes
+    except Exception:
+        # If we cannot patch, fall back to a tmp themes dir path
+        fallback = tmp_path / "themes"
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback
