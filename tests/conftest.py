@@ -1,4 +1,3 @@
-
 import pytest
 
 
@@ -48,9 +47,54 @@ def test_environment(monkeypatch, tmp_path, request):
         if hasattr(tui_mod, "TUIBot"):
             monkeypatch.setattr(tui_mod.TUIBot, "render_screen", lambda self: None)
             monkeypatch.setattr(tui_mod.TUIBot, "render_input", lambda self: None)
+        # Redirect module __file__ to a temporary location under tmp_path so
+        # tests that compute Path(__file__).parent / "themes" will operate
+        # in a test-local directory instead of writing into the installed
+        # package directory.
+        try:
+            module_dir = tmp_path / "tui_module"
+            module_dir.mkdir(parents=True, exist_ok=True)
+            # Provide a module-level THEMES_BASE that points to the temporary
+            # module_dir so theme lookups use tmp_path during tests.
+            monkeypatch.setattr(tui_mod, "__file__", str(module_dir / "tui_bot.py"))
+            try:
+                monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir)
+            except Exception:
+                # best-effort; continue if we can't set it
+                pass
+        except Exception:
+            # best-effort; if this fails, tests may still patch manually
+            pass
     except Exception:
         # If the package isn't importable yet, tests will import it later and
         # may patch as needed; don't fail the fixture.
         pass
 
     yield
+
+
+@pytest.fixture
+def themes_dir(monkeypatch, tmp_path):
+    """Create a temporary themes directory and point the module at it.
+
+    Tests that need to read/write theme JSON files should use this fixture.
+    It will create <tmp_path>/tui_module/themes and set
+    juiced.tui_bot.THEMES_BASE to the temporary module dir so lookups
+    like Path(__file__).parent / 'themes' resolve inside tmp_path.
+    """
+    try:
+        import juiced.tui_bot as tui_mod
+
+        module_dir = tmp_path / "tui_module"
+        module_dir.mkdir(parents=True, exist_ok=True)
+        # Set the module-level THEMES_BASE if present; raising=False so
+        # monkeypatch won't fail when attribute doesn't previously exist.
+        monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir, raising=False)
+        themes = module_dir / "themes"
+        themes.mkdir(parents=True, exist_ok=True)
+        return themes
+    except Exception:
+        # If we cannot patch, fall back to a tmp themes dir path
+        fallback = tmp_path / "themes"
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback

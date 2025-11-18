@@ -26,6 +26,8 @@ class FakeTerm:
 
 # Centralized fixture handles Terminal and _TEST_LOG_DIR
 
+_TEST_LOG_DIR = None
+
 
 def make_bot():
     import juiced.tui_bot as tui_mod

@@ -43,6 +43,9 @@ class FakeTerm:
 
 # Centralized fixture in `tests/conftest.py` provides Terminal/patching
 
+# Fallback for static analysis; conftest overrides at runtime
+_TEST_LOG_DIR = None
+
 
 def make_bot(width=60, height=20):
     import juiced.tui_bot as tui_mod
@@ -107,7 +110,7 @@ def test_border_not_overwritten_by_exact_length_message(monkeypatch):
     user = SimpleNamespace(name="leader", rank=4, afk=False, muted=False, smuted=False)
     ul = {"leader": user}
     # add helper attributes used by render_users
-    userlist_obj = SimpleNamespace(**ul)
+    _userlist_obj = SimpleNamespace(**ul)
 
     # Make it act like a mapping for len() and iteration
     class UL(dict):

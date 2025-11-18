@@ -23,6 +23,8 @@ class FakeTerm:
 
 
 # Central conftest fixture provides `_TEST_LOG_DIR` and Terminal patching
+# Fallback for static analysis; conftest will set this at runtime
+_TEST_LOG_DIR = None
 
 
 def make_bot():

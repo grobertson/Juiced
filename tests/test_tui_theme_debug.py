@@ -25,6 +25,8 @@ class FakeTerm:
 
 # Use centralized `tests/conftest.py::test_environment` which sets
 # `_TEST_LOG_DIR` and patches the TUI Terminal and rendering helpers.
+# Fallback for static analysis; conftest will set this at runtime
+_TEST_LOG_DIR = None
 
 
 def make_bot(config_file="config.json"):

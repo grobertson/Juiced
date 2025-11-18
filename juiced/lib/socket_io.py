@@ -465,7 +465,7 @@ class SocketIO:
             cls.logger.info("upgrade")
             await websocket.send("5")
             return SocketIO(websocket, conf, qsize, loop)
-        except:
+        except Exception:
             await websocket.close()
             raise
 

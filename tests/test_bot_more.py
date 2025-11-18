@@ -127,7 +127,7 @@ async def test_process_outbound_messages_periodically_success(monkeypatch):
         for m in messages:
             mid = m["id"]
             text = m["message"]
-            retry_count = m.get("retry_count", 0)
+            _retry_count = m.get("retry_count", 0)
             try:
                 await bot.chat(text)
                 bot.db.mark_outbound_sent(mid)
