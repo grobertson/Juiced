@@ -1843,7 +1843,7 @@ class TUIBot(Bot):
                 )
                 self.add_system_message("", color="white")
                 for theme_name, theme_data in themes:
-                    name = theme_data.get("name", theme_name)
+                    _name = theme_data.get("name", theme_name)
                     desc = theme_data.get("description", "No description")
                     marker = " ⭐" if theme_name == self.current_theme_name else ""
                     self.add_system_message(
