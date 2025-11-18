@@ -25,6 +25,7 @@ Keybindings:
 """
 
 import asyncio
+import os
 import json
 import logging
 import platform
@@ -319,11 +320,11 @@ class TUIBot(Bot):
         if theme_name == "theme.json":
             theme_name = "default"
 
-        # Allow tests to override the themes base directory by setting a
-        # module-level THEMES_BASE (a Path or string). This keeps production
+        # Allow tests to override the themes base directory by setting the
+        # environment variable JUICED_THEMES_BASE. This keeps production
         # behaviour unchanged while enabling tests to point themes at a
         # temporary directory.
-        base_dir = Path(globals().get("THEMES_BASE", Path(__file__).parent))
+        base_dir = Path(os.environ.get("JUICED_THEMES_BASE", Path(__file__).parent))
 
         # Check if it's a full path or just a name
         if "/" in theme_name or "\\" in theme_name:
@@ -383,8 +384,8 @@ class TUIBot(Bot):
         Returns:
             list: List of tuples (theme_name, theme_info_dict)
         """
-        themes_dir = Path(globals().get("THEMES_BASE", Path(__file__).parent)) / "themes"
-        
+        themes_dir = Path(os.environ.get("JUICED_THEMES_BASE", Path(__file__).parent)) / "themes"
+
         themes = []
 
         if not themes_dir.exists():

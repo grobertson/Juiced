@@ -38,7 +38,7 @@ def patch_terminal_and_render(monkeypatch, tmp_path):
     module_dir = tmp_path / "tui_module"
     module_dir.mkdir(parents=True, exist_ok=True)
     try:
-        monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir)
+        monkeypatch.setenv("JUICED_THEMES_BASE", str(module_dir))
     except Exception:
         pass
 

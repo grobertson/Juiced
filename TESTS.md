@@ -42,7 +42,7 @@ Avoid global state mutation in tests; reset or use fixtures to isolate tests.
 - Theme-related tests should not write files into the packaged `juiced/` directory.
 - A reusable fixture `themes_dir` is provided in `tests/conftest.py`. Use it in tests that need to create or read theme JSON files. The fixture:
     - creates a temporary module-like directory under pytest's `tmp_path` (e.g. `<tmp_path>/tui_module/themes`);
-    - sets `juiced.tui_bot.THEMES_BASE` (monkeypatched with `raising=False`) so lookups like `Path(__file__).parent / 'themes'` resolve inside the temporary dir;
+    - sets the `JUICED_THEMES_BASE` environment variable so lookups like `Path(__file__).parent / 'themes'` resolve inside the temporary dir;
     - returns a `pathlib.Path` to the temporary `themes` directory so tests can write fixture JSON files there.
 
 Example usage in a test:
@@ -56,7 +56,7 @@ def test_example(themes_dir):
 ```
 
 Notes:
-- Production code is unchanged — `THEMES_BASE` is optional and only used by tests when monkeypatched. Tests that don't use the fixture will continue to read from the package `themes/` directory.
+- Production code is unchanged — tests may set the `JUICED_THEMES_BASE` environment variable to point theme lookups at a temporary directory. Tests that don't use the fixture will continue to read from the package `themes/` directory.
 - This keeps tests self-contained and prevents tests from modifying or leaving artifacts in the source tree.
 
 Example patterns

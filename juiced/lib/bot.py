@@ -338,7 +338,21 @@ class Bot:
             raise
         except Exception as ex:
             raise SocketIOError(ex)
-        conf = json.loads(conf)
+        # Defensive parsing: the HTTP GET may return an empty body or
+        # non-JSON content (e.g., an error page). Handle that gracefully
+        # and raise a SocketConfigError with context instead of letting a
+        # JSONDecodeError crash the application.
+        try:
+            conf = json.loads(conf)
+        except Exception as ex:
+            # Log the raw response for debugging (truncate to avoid huge logs)
+            raw = (conf or "")
+            self.logger.error(
+                "Failed to parse socket config JSON (len=%d): %.200r",
+                len(raw),
+                raw,
+            )
+            raise SocketConfigError("invalid socket config JSON", raw) from ex
         self.logger.info(conf)
         if "error" in conf:
             raise SocketConfigError(conf["error"])

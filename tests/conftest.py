@@ -54,11 +54,13 @@ def test_environment(monkeypatch, tmp_path, request):
         try:
             module_dir = tmp_path / "tui_module"
             module_dir.mkdir(parents=True, exist_ok=True)
-            # Provide a module-level THEMES_BASE that points to the temporary
-            # module_dir so theme lookups use tmp_path during tests.
+            # Keep module __file__ redirected so any Path(__file__).parent
+            # usages still resolve under tmp_path. Prefer using an
+            # environment variable override for themes (JUICED_THEMES_BASE)
+            # but leave __file__ patched as a fallback for code that uses it.
             monkeypatch.setattr(tui_mod, "__file__", str(module_dir / "tui_bot.py"))
             try:
-                monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir)
+                monkeypatch.setenv("JUICED_THEMES_BASE", str(module_dir))
             except Exception:
                 # best-effort; continue if we can't set it
                 pass
@@ -78,18 +80,17 @@ def themes_dir(monkeypatch, tmp_path):
     """Create a temporary themes directory and point the module at it.
 
     Tests that need to read/write theme JSON files should use this fixture.
-    It will create <tmp_path>/tui_module/themes and set
-    juiced.tui_bot.THEMES_BASE to the temporary module dir so lookups
-    like Path(__file__).parent / 'themes' resolve inside tmp_path.
+    It will create <tmp_path>/tui_module/themes and set the
+    `JUICED_THEMES_BASE` environment variable so lookups like
+    Path(__file__).parent / 'themes' resolve inside tmp_path.
     """
     try:
         import juiced.tui_bot as tui_mod
 
         module_dir = tmp_path / "tui_module"
         module_dir.mkdir(parents=True, exist_ok=True)
-        # Set the module-level THEMES_BASE if present; raising=False so
-        # monkeypatch won't fail when attribute doesn't previously exist.
-        monkeypatch.setattr(tui_mod, "THEMES_BASE", module_dir, raising=False)
+        # Prefer environment variable override for tests
+        monkeypatch.setenv("JUICED_THEMES_BASE", str(module_dir))
         themes = module_dir / "themes"
         themes.mkdir(parents=True, exist_ok=True)
         return themes
