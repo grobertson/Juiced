@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from io import StringIO
 
@@ -6,6 +7,33 @@ import pytest
 
 from juiced.lib import config as config_mod
 from juiced.lib import util as util_mod
+
+
+def test_robustfilehandler_flush_oserror(tmp_path, monkeypatch):
+    """Test RobustFileHandler handles OSError gracefully."""
+    log_file = tmp_path / "test.log"
+    log_file.write_text("")
+    
+    handler = config_mod.RobustFileHandler(str(log_file))
+    
+    # Test EINVAL (errno 22) is ignored
+    original_flush = logging.FileHandler.flush
+    def fake_flush_einval(self):
+        raise OSError(22, "Invalid argument")
+    
+    monkeypatch.setattr(logging.FileHandler, "flush", fake_flush_einval)
+    handler.flush()  # Should not raise
+    
+    # Test other OSError is re-raised
+    def fake_flush_other(self):
+        raise OSError(5, "Other error")
+    
+    monkeypatch.setattr(logging.FileHandler, "flush", fake_flush_other)
+    with pytest.raises(OSError):
+        handler.flush()
+    
+    monkeypatch.setattr(logging.FileHandler, "flush", original_flush)
+    handler.close()
 
 
 def test_configure_logger_stream():
@@ -113,3 +141,54 @@ def test_uncloak_ip_with_start():
     # uncloak supplying start
     res = util_mod.uncloak_ip(cloaked, start=2)
     assert "127.0.0.1" in res
+
+
+def test_messageparser_edge_cases():
+    """Test MessageParser edge cases."""
+    # Test with no markup
+    p = util_mod.MessageParser(markup=None)
+    out = p.parse("<strong>text</strong>")
+    assert "text" in out
+    
+    # Test custom markup with attribute matching
+    markup = [("span", {"class": "highlight"}, "[", "]")]
+    p2 = util_mod.MessageParser(markup=markup)
+    out2 = p2.parse('<span class="highlight">hi</span>')
+    assert "[hi]" in out2
+    
+    # Test unrecognized tag with src/href
+    p3 = util_mod.MessageParser()
+    out3 = p3.parse('<img src="http://example.com/img.png" />')
+    assert "http://example.com/img.png" in out3
+    
+    # Test nested tags
+    p4 = util_mod.MessageParser()
+    out4 = p4.parse("<strong><em>nested</em></strong>")
+    assert "nested" in out4
+
+
+def test_uncloak_ip_auto_detect_start():
+    """Test uncloak_ip with auto-detection of start index."""
+    # Use a properly cloaked IP
+    cloaked_ip = util_mod.cloak_ip("192.168.1.100")
+    # Auto-detect should work (start=None)
+    results = util_mod.uncloak_ip(cloaked_ip, start=None)
+    # Should return the original IP in results
+    assert "192.168.1.100" in results
+
+
+def test_util_queue_legacy():
+    """Test Queue task_done and join for legacy Python."""
+    q = util_mod.Queue()
+    # Put an item first before calling task_done
+    q.put_nowait("item")
+    q.task_done()
+    # join is async but we just check it exists
+    assert hasattr(q, "join")
+
+
+def test_current_task_compatibility():
+    """Test current_task compatibility."""
+    # Just verify current_task is available
+    assert hasattr(util_mod, "current_task")
+    assert callable(util_mod.current_task)

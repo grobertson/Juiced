@@ -52,3 +52,32 @@ def test_userlist_add_get_and_duplicates_and_leader():
     ul.add(u2)
     ul.leader = "dave"
     assert ul.leader is u2
+
+
+def test_user_str_without_ip():
+    """Test User.__str__ when IP is None."""
+    u = User("alice", rank=2.5)
+    s = str(u)
+    assert "alice" in s
+    assert "2.50" in s or "2.5" in s
+    assert "[" not in s  # No IP info
+
+
+def test_user_str_with_ip():
+    """Test User.__str__ with IP information."""
+    u = User("bob", rank=3.0)
+    u.ip = "192.168.aaa.bbb"
+    s = str(u)
+    assert "bob" in s
+    assert "192.168" in s
+    assert "[" in s  # Has IP info
+    assert repr(u) == s  # repr same as str
+
+
+def test_user_meta_setter():
+    """Test User.meta property setter with partial data."""
+    u = User("charlie")
+    u.meta = {"afk": True}  # Only one field
+    assert u.afk is True
+    assert u.muted is False  # default
+    assert u.smuted is False  # default

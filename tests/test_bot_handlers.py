@@ -102,6 +102,55 @@ async def test_run_creates_and_cancels_background_tasks_on_socketioerror():
     assert bot._maintenance_task.done()
 
 
+@pytest.mark.asyncio
+async def test_bot_db_init_failure(monkeypatch):
+    """Test bot handles database initialization failure gracefully."""
+    from juiced.lib import bot as bot_module
+    
+    # Mock BotDatabase to raise exception
+    class FailingDB:
+        def __init__(self, *args):
+            raise ValueError("DB init failed")
+    
+    original_db = bot_module.BotDatabase
+    monkeypatch.setattr(bot_module, "BotDatabase", FailingDB)
+    
+    bot = bot_module.Bot(
+        domain="test.com",
+        channel="test",
+        user="testuser",
+        enable_db=True,
+        db_path=":memory:"
+    )
+    
+    # Database should be None after failed init
+    assert bot.db is None
+    
+    monkeypatch.setattr(bot_module, "BotDatabase", original_db)
+
+
+@pytest.mark.asyncio
+async def test_bot_db_module_not_available(monkeypatch):
+    """Test bot handles missing database module."""
+    from juiced.lib import bot as bot_module
+    
+    original_db = bot_module.BotDatabase
+    monkeypatch.setattr(bot_module, "BotDatabase", None)
+    
+    bot = bot_module.Bot(
+        domain="test.com",
+        channel="test",
+        user="testuser",
+        enable_db=True,
+        db_path=":memory:"
+    )
+    
+    # Database should be None when module unavailable
+    assert bot.db is None
+    
+    monkeypatch.setattr(bot_module, "BotDatabase", original_db)
+
+
 def test_on_rank_updates_user_rank():
     bot = make_bot()
     bot._on_rank(None, 3)
