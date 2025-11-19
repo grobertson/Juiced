@@ -9,6 +9,8 @@
 
 *Note: Problems have been reported with this version on MacOS, related to the root certificates available to python. Fix should be in v0.3.0 when it's released. Thanks to naten530 for the assistance in isolating this issue!*
 
+We're actively investigating this macOS root-certificate issue. The project's CI now runs macOS-specific diagnostic checks on pull requests and pushes to capture SSL/OpenSSL and certifi information automatically; this will help us identify and fix platform-specific failures faster.
+
 ---
 
 ##  Why Juiced?
@@ -21,15 +23,15 @@ Tired of clunky web interfaces? **Juiced** brings the speed and elegance of term
 
 ##  Features That Pop
 
- **11 Robot-Themed Color Schemes**  HAL 9000, R2-D2, C-3PO, T-800, WALL-E, and more  
- **Lightning-Fast Tab Completion**  Usernames, emotes, commands  
- **Infinite Scroll**  1000+ message history at your fingertips  
- **Live User List**  Rank colors, AFK detection, real-time updates  
- **Media Display**  See what's playing without leaving your terminal  
- **Session Stats**  Uptime, viewer counts, connection health  
- **Smart Message Wrapping**  Long messages that actually look good  
- **Private Messages**  Direct communication, terminal-style  
- **Mention Highlighting**  Never miss when someone's talking to you  
+ **11 Robot-Themed Color Schemes**  HAL 9000, R2-D2, C-3PO, T-800, WALL-E, and more
+ **Lightning-Fast Tab Completion**  Usernames, emotes, commands
+ **Infinite Scroll**  1000+ message history at your fingertips
+ **Live User List**  Rank colors, AFK detection, real-time updates
+ **Media Display**  See what's playing without leaving your terminal
+ **Session Stats**  Uptime, viewer counts, connection health
+ **Smart Message Wrapping**  Long messages that actually look good
+ **Private Messages**  Direct communication, terminal-style
+ **Mention Highlighting**  Never miss when someone's talking to you
  **Cross-Platform**  Windows, Linux, macOS ready
 
 ---
@@ -77,8 +79,8 @@ Switch themes on the fly with `/theme <name>`:
 
 This is **v0.2.7**  early, raw, and ready for feedback. DEBUG logging is enabled by default to help us squash bugs together.
 
-**Found a bug?** Open an issue.  
-**Have an idea?** Start a discussion.  
+**Found a bug?** Open an issue.
+**Have an idea?** Start a discussion.
 **Love it?** Star the repo and tell your friends.
 
 ---
@@ -111,7 +113,7 @@ The Grindhouse mods, for everything you guys do.
 
 Everyone who hangs out in 420Grindhouse suffering the Turkeys and enjoying the unexpected gems.
 
-Extracted with love from [Rosey-Robot](https://github.com/grobertson/Rosey-Robot)  
+Extracted with love from [Rosey-Robot](https://github.com/grobertson/Rosey-Robot)
 
 Inspired by the golden age of IRC clients. RIP BitchX
 

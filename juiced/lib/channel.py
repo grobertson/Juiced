@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from .error import ChannelPermissionError
 from .playlist import Playlist
 from .user import UserList
-from .error import ChannelPermissionError
 
 
 class Channel:
@@ -31,15 +31,15 @@ class Channel:
 
     RANK_PRECISION = 1e-4
 
-    def __init__(self, name='', password=None):
+    def __init__(self, name="", password=None):
         self.name = name
         self.password = password
         self.drink_count = 0
         self.voteskip_count = 0
         self.voteskip_need = 0
-        self.motd = ''
-        self.css = ''
-        self.js = ''
+        self.motd = ""
+        self.css = ""
+        self.js = ""
         self.emotes = []
         self.permissions = {}
         self.options = {}
@@ -89,6 +89,5 @@ class Channel:
             raise ValueError('unknown action "%s"' % action)
 
     def has_permission(self, action, user):
-        """check_permission(action, user, False)
-        """
+        """check_permission(action, user, False)"""
         return self.check_permission(action, user, False)

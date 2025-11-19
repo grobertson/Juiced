@@ -1,0 +1,13 @@
+# Development dependencies (includes test requirements)
+-r requirements-test.txt
+
+# Linters / formatters
+black>=23.1.0,<25.0
+ruff>=0.18.0,<1.0
+isort>=5.10.0,<6.0
+
+# Git hooks
+pre-commit>=2.20.0,<3.0
+
+# Optional utilities for CI / local dev
+pytest-xdist>=3.0.0,<4.0

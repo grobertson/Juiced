@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Juiced launcher script for Unix systems."""
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 # Get script directory
 script_dir = Path(__file__).parent
-config_file = script_dir / 'configs' / 'config.yaml'
+config_file = script_dir / "configs" / "config.yaml"
 
 # Check if venv exists
-venv_python = script_dir / 'venv' / 'bin' / 'python'
+venv_python = script_dir / "venv" / "bin" / "python"
 
 if venv_python.exists():
     print("Starting Juiced with virtual environment...")
@@ -24,11 +24,11 @@ else:
     print("  venv/bin/pip install -r requirements.txt")
     print("")
     print("Attempting to run with system Python...")
-    python_cmd = 'python3'
+    python_cmd = "python3"
 
 # Run Juiced
 try:
-    subprocess.run([python_cmd, '-m', 'juiced', str(config_file)])
+    subprocess.run([python_cmd, "-m", "juiced", str(config_file)])
 except KeyboardInterrupt:
     print("\nShutting down...")
 except Exception as e:

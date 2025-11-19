@@ -70,11 +70,11 @@ if [ ! -f "configs/config.yaml" ]; then
         }
 
         ESCAPED_CHANNEL=$(escape_sed "$CYTUBE_CHANNEL")
-        
+
         if [ "$CYTUBE_USERNAME" != "null" ]; then
             ESCAPED_USERNAME=$(escape_sed "$CYTUBE_USERNAME")
             ESCAPED_PASSWORD=$(escape_sed "$CYTUBE_PASSWORD")
-            
+
             # Combine all sed operations into one atomic command
             sed -i.bak \
                 -e "s/\"your-channel-name\"/\"$ESCAPED_CHANNEL\"/" \

@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push: {}
+  pull_request: {}
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        # Quote versions to ensure YAML treats them as strings (prevents 3.10/3.11 being parsed as floats)
+        # Exclude 3.7: not available on newer hosted images (Ubuntu 24.04 / macOS runners)
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          # Also install test/dev requirements if present (includes pytest-asyncio)
+          if [ -f requirements-test.txt ]; then python -m pip install -r requirements-test.txt; fi
+          # coverage is still needed explicitly
+          python -m pip install coverage
+
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest
+          coverage report --fail-under=60
+
+      - name: macOS diagnostics (collect SSL/root-certs info)
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "Note: macOS root-certs issue under investigation - collecting diagnostics..."
+          python - <<'PY'
+          import ssl
+          try:
+              import certifi
+          except Exception:
+              certifi = None
+          print('--- ssl.get_default_verify_paths() ---')
+          print(ssl.get_default_verify_paths())
+          if certifi:
+              print('--- certifi.where() ---')
+              print(certifi.where())
+          else:
+              print('certifi not installed')
+          PY
+          echo '--- openssl version ---'
+          openssl version || true
+          echo '--- python ssl OPENSSL_VERSION ---'
+          python -c "import ssl; print(getattr(ssl, 'OPENSSL_VERSION', 'unknown'))"
+          echo '--- list likely cert dirs ---'
+          ls -l /etc/ssl || true
+          ls -l /usr/local/etc/openssl* || true

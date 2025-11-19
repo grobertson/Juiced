@@ -3,28 +3,29 @@
 
 import asyncio
 import logging
-from html.parser import HTMLParser, unescape
-from hashlib import md5
 from base64 import b64encode
-from itertools import islice
 from collections.abc import Sequence
-import requests
+from hashlib import md5
+from html.parser import HTMLParser, unescape
+from itertools import islice
 
+import requests
 
 logger = logging.getLogger(__name__)
 
 
 # Compatibility for older Python versions that don't have task_done in asyncio.Queue
-if hasattr(asyncio.Queue, 'task_done'):
+if hasattr(asyncio.Queue, "task_done"):
     Queue = asyncio.Queue
 else:
     # Wrapper to add task_done and join methods for older Python versions
     class Queue(asyncio.Queue):
         def task_done(self):
-            logger.debug('task_done %s', self)
+            logger.debug("task_done %s", self)
 
         async def join(self):
-            logger.info('join %s', self)
+            logger.info("join %s", self)
+
 
 # Compatibility for getting current task (different in Python 3.6 vs 3.7+)
 try:
@@ -44,17 +45,17 @@ class MessageParser(HTMLParser):
     """
 
     DEFAULT_MARKUP = [
-        ('code', None, '`', '`'),
-        ('strong', None, '*', '*'),
-        ('em', None, '_', '_'),
-        ('s', None, '~~', '~~'),
-        (None, {'class': 'spoiler'}, '[sp]', '[/sp]')
+        ("code", None, "`", "`"),
+        ("strong", None, "*", "*"),
+        ("em", None, "_", "_"),
+        ("s", None, "~~", "~~"),
+        (None, {"class": "spoiler"}, "[sp]", "[/sp]"),
     ]
 
     def __init__(self, markup=DEFAULT_MARKUP):
         super().__init__()
         self.markup = markup
-        self.message = ''
+        self.message = ""
         self.tags = []
 
     def get_tag_markup(self, tag, attr):
@@ -111,8 +112,8 @@ class MessageParser(HTMLParser):
         else:
             # For unrecognized tags, extract URLs from src/href attributes
             for name, value in attr:
-                if name in ('src', 'href'):
-                    self.message += ' %s ' % value
+                if name in ("src", "href"):
+                    self.message += " %s " % value
 
     def handle_endtag(self, tag):
         """Handle closing HTML tags by adding closing markup
@@ -150,7 +151,7 @@ class MessageParser(HTMLParser):
             Parsed message.
         """
         # Reset parser state
-        self.message = ''
+        self.message = ""
         self.tags = []
 
         # Parse the HTML
@@ -223,8 +224,8 @@ def ip_hash(string, length):
     Returns:
         Base64-encoded MD5 hash truncated to length
     """
-    res = md5(string.encode('utf-8')).digest()
-    return b64encode(res)[:length].decode('utf-8')
+    res = md5(string.encode("utf-8")).digest()
+    return b64encode(res)[:length].decode("utf-8")
 
 
 def cloak_ip(ip, start=0):
@@ -248,20 +249,20 @@ def cloak_ip(ip, start=0):
     >>> cloak_ip('127.0.0.1', 2)
     '127.0.ou9.RBl'
     """
-    parts = ip.split('.')
-    acc = ''  # Accumulator for building hash input
+    parts = ip.split(".")
+    acc = ""  # Accumulator for building hash input
 
     # Hash each part starting from 'start' index
     for i, part in islice(enumerate(parts), start, None):
         # Replace part with hash based on accumulated previous parts
-        parts[i] = ip_hash('%s%s%s' % (acc, part, i), 3)
+        parts[i] = ip_hash("%s%s%s" % (acc, part, i), 3)
         acc += part  # Add current part to accumulator
 
     # Pad with asterisks if less than 4 parts
     while len(parts) < 4:
-        parts.append('*')
+        parts.append("*")
 
-    return '.'.join(parts)
+    return ".".join(parts)
 
 
 def _uncloak_ip(cloaked_parts, uncloaked_parts, acc, i, ret):
@@ -276,23 +277,20 @@ def _uncloak_ip(cloaked_parts, uncloaked_parts, acc, i, ret):
     """
     # Base case: processed all 4 parts
     if i > 3:
-        ret.append('.'.join(uncloaked_parts))
+        ret.append(".".join(uncloaked_parts))
         return
 
     # Try all possible values (0-255) for this octet
     for part in range(256):
-        part_hash = ip_hash('%s%s%s' % (acc, part, i), 3)
+        part_hash = ip_hash("%s%s%s" % (acc, part, i), 3)
         # If hash matches, this is a valid candidate
         if part_hash == cloaked_parts[i]:
             uncloaked_parts[i] = str(part)
             # Recursively process next part
             _uncloak_ip(
-                cloaked_parts,
-                uncloaked_parts,
-                '%s%d' % (acc, part),
-                i + 1,
-                ret
+                cloaked_parts, uncloaked_parts, "%s%d" % (acc, part), i + 1, ret
             )
+
 
 def uncloak_ip(ip, start=0):
     """Uncloak IP.
@@ -319,7 +317,7 @@ def uncloak_ip(ip, start=0):
     >>> uncloak_ip('127.0.ou9.RBl', None)
     ['127.0.0.1']
     """
-    parts = ip.split('.')
+    parts = ip.split(".")
 
     # Auto-detect start index if None
     if start is None:
@@ -335,5 +333,5 @@ def uncloak_ip(ip, start=0):
 
     # Brute-force uncloak by trying all possible values
     ret = []
-    _uncloak_ip(parts, list(parts), '', start, ret)
+    _uncloak_ip(parts, list(parts), "", start, ret)
     return ret
