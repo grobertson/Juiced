@@ -31,3 +31,25 @@ def test_unknown_type_url_property_fallback(caplog):
     url = m.url
     assert url == "zz:id"
     assert "unknown media type" in caplog.text.lower()
+
+
+def test_medialink_str_and_repr():
+    """Test MediaLink __str__ and __repr__."""
+    ml = MediaLink("yt", "abc123")
+    assert str(ml) == "yt:abc123"
+    assert "MediaLink" in repr(ml)
+    assert "'yt'" in repr(ml)
+    assert "'abc123'" in repr(ml)
+
+
+def test_medialink_equality():
+    """Test MediaLink __eq__."""
+    ml1 = MediaLink("yt", "abc")
+    ml2 = MediaLink("yt", "abc")
+    ml3 = MediaLink("yt", "xyz")
+    ml4 = MediaLink("vm", "abc")
+    
+    assert ml1 == ml2
+    assert not (ml1 == ml3)
+    assert not (ml1 == ml4)
+    assert not (ml1 == "yt:abc")  # Not a MediaLink instance
