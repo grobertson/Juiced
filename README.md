@@ -6,11 +6,6 @@
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-
-*Note: Problems have been reported with this version on MacOS, related to the root certificates available to python. Fix should be in v0.3.0 when it's released. Thanks to naten530 for the assistance in isolating this issue!*
-
-We're actively investigating this macOS root-certificate issue. The project's CI now runs macOS-specific diagnostic checks on pull requests and pushes to capture SSL/OpenSSL and certifi information automatically; this will help us identify and fix platform-specific failures faster.
-
 ---
 
 ##  Why Juiced?
@@ -103,15 +98,11 @@ MIT License  Use it, fork it, make it yours.
 
 ##  Acknowledgments
 
-KGMoon, founder of #420Grindhouse and a damn good dude.
+#Channel-X, the place to riff on B movies, HK kung fu, and misc nostalgia with a UHF vibe.
 
-KevinChrist - For volunteering to beta test immediately!
+The Channel-Z team, for everything you guys do.
 
-#420Grindhouse, the place to riff on B movies, and one hell of a good community.
-
-The Grindhouse mods, for everything you guys do.
-
-Everyone who hangs out in 420Grindhouse suffering the Turkeys and enjoying the unexpected gems.
+Everyone who hangs out in Channel-Z suffering the Turkeys and enjoying the unexpected gems.
 
 Extracted with love from [Rosey-Robot](https://github.com/grobertson/Rosey-Robot)
 
