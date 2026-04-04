@@ -19,14 +19,23 @@ Tired of clunky web interfaces? **Juiced** brings the speed and elegance of term
 ##  Features That Pop
 
  **11 Robot-Themed Color Schemes**  HAL 9000, R2-D2, C-3PO, T-800, WALL-E, and more
+ 
  **Lightning-Fast Tab Completion**  Usernames, emotes, commands
+ 
  **Infinite Scroll**  1000+ message history at your fingertips
+ 
  **Live User List**  Rank colors, AFK detection, real-time updates
+ 
  **Media Display**  See what's playing without leaving your terminal
+ 
  **Session Stats**  Uptime, viewer counts, connection health
+ 
  **Smart Message Wrapping**  Long messages that actually look good
+ 
  **Private Messages**  Direct communication, terminal-style
+ 
  **Mention Highlighting**  Never miss when someone's talking to you
+ 
  **Cross-Platform**  Windows, Linux, macOS ready
 
 ---
